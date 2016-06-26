@@ -1,0 +1,42 @@
+#startMenu {
+    width: 400px;
+    border-radius: 10px;
+    padding: 20px;
+    background-color: #1a1a1a;
+
+    margin: 20% auto;
+}
+
+#startContent span {
+    display: block;
+    padding-right: 30px;
+    overflow: hidden;
+}
+
+#startContent input {
+    width: 100%;
+
+    border: none;
+    padding: 10px;
+    border-radius: 5px;
+    height: 1em;
+}
+
+#playButton {
+    float: right;
+
+    border: none;
+    padding: 10px;
+    border-radius: 5px;
+    height: 2.5em;
+    line-height: 0;
+
+    background-color: #ededed;
+}
+
+h1 {
+    font-family: Montserrat, sans-serif;
+    font-size: 3em;
+    color: #fafafa;
+    margin: 0.2em 1em 0.5em;
+}
