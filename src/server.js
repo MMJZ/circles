@@ -50,15 +50,15 @@ function doGameTick(){
 // Socketing
 
 io.on('connection', function(socket) {
-    
+
     console.log('info : user taking an interest');
-    
+
     var currentPlayer;
-    
+
     socket.on('nick', function(player) {
-       
+
         console.log('info : ' + player.name + ' connecting');
-        
+
         if(findIndex(users, player.id) > -1){
             console.log('cerr : player is already connected');
             socket.disconnect();
@@ -67,7 +67,7 @@ io.on('connection', function(socket) {
             socket.disconnect();
         }else{
             console.log('info : ' + player.name + ' connected');
-            
+
             currentPlayer = {
                 id: socket.id,
                 pos: getFreePosition(),
@@ -81,7 +81,7 @@ io.on('connection', function(socket) {
             };
         }
     });
-    
+
     socket.on('disconnect', function () {
         var indexx = findIndex(users, currentPlayer.id);
         if (indexx > -1) users.splice(indexx, 1);
