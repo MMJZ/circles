@@ -21,6 +21,41 @@ canvas {
     margin: 10em auto;
 }
 
+#startMenu.hidden {
+    display: none;
+}
+
+#startMenu.animate {
+    animation-duration: 0.7s;
+    animation-name: circleHide;
+    overflow: hidden;
+}
+
+#startMenu * {
+    transition: 0.5s;
+}
+
+#startMenu.animate * {
+    opacity: 0;
+}
+
+@keyframes circleHide {
+    30% {
+        width: 130px;
+        height: 130px;
+    }
+    60% {
+        border-radius: 200px;
+        opacity: 1;
+    }
+    100% {
+        width: 0;
+        height: 0;
+        padding: 0;
+        margin-top: -20px;
+    }
+}
+
 #startContent span {
     display: block;
     padding-right: 30px;
