@@ -46,12 +46,20 @@ var canvas = document.getElementById('canvas'),
                 window.removeEventListener('keyup', this.keyupHandler);
             },
             keydownHandler: function(e) {
-                console.log(e);
-                // TODO
+                switch (e.keyCode) {
+                    case 37: v.keys.left = true; break;
+                    case 38: v.keys.up = true; break;
+                    case 39: v.keys.right = true; break;
+                    case 40: v.key.down = true; break;
+                }
             },
             keyupHandler: function(e) {
-                console.log(e);
-                // TODO
+                switch (e.keyCode) {
+                    case 37: v.keys.left = false; break;
+                    case 38: v.keys.up = false; break;
+                    case 39: v.keys.right = false; break;
+                    case 40: v.key.down = false; break;
+                }
             },
         },
 
