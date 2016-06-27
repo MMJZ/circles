@@ -55,27 +55,14 @@ var canvas = document.getElementById('canvas'),
             },
         },
 
-        connectAndStart: function() {
-            // TODO
-        },
-
         begin: function() {
-            var hideStartMenu = function() {
-                var a = document.getElementById('startMenu');
-                a.addEventListener('animationend', function() {
-                    a.className = 'hidden';
-                }, false);
-                a.className = 'animate';
-                window.focus();
-            };
-
             // valid nickname - alphanumeric and underscore
             var regex = /^\w*$/;
             var nick = document.getElementById('nameInput').value;
             if (regex.test(nick)) {
-                hideStartMenu();
+                UI.hideStartMenu();
                 Game.keyActions.bind();
-                Game.connectAndStart();
+                Server.connectAndStart(nick);
             } else {
                 alert('nickname must be alphanumeric');
             }
@@ -117,6 +104,21 @@ var canvas = document.getElementById('canvas'),
             };
 
             d.fillAll(d.white);
+        },
+    },
+    Server = {
+        connectAndStart: function(nick) {
+            // TODO
+        },
+    },
+    UI = {
+        hideStartMenu: function() {
+            var a = document.getElementById('startMenu');
+            a.addEventListener('animationend', function() {
+                a.className = 'hidden';
+            }, false);
+            a.className = 'animate';
+            window.focus();
         },
     };
 
