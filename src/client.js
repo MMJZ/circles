@@ -1,5 +1,12 @@
 var canvas = document.getElementById('canvas'),
     c = canvas.getContext('2d'),
+    v = {
+        keys: {
+            left: false,
+            right: false,
+            up: false,
+            down: false,
+        },
     Game = {
         init: function() {
             this.bindUIActions();
@@ -29,6 +36,29 @@ var canvas = document.getElementById('canvas'),
             window.addEventListener('resize', resize);
         },
 
+        keyActions: {
+            bind: function() {
+                window.addEventListener('keydown', this.keydownHandler);
+                window.addEventListener('keyup', this.keyupHandler);
+            },
+            unbind: function() {
+                window.removeEventListener('keydown', this.keydownHandler);
+                window.removeEventListener('keyup', this.keyupHandler);
+            },
+            keydownHandler: function(e) {
+                console.log(e);
+                // TODO
+            },
+            keyupHandler: function(e) {
+                console.log(e);
+                // TODO
+            },
+        },
+
+        connectAndStart: function() {
+            // TODO
+        },
+
         begin: function() {
             var hideStartMenu = function() {
                 var a = document.getElementById('startMenu');
@@ -36,6 +66,7 @@ var canvas = document.getElementById('canvas'),
                     a.className = 'hidden';
                 }, false);
                 a.className = 'animate';
+                window.focus();
             };
 
             // valid nickname - alphanumeric and underscore
@@ -43,7 +74,8 @@ var canvas = document.getElementById('canvas'),
             var nick = document.getElementById('nameInput').value;
             if (regex.test(nick)) {
                 hideStartMenu();
-                // TODO: start game
+                Game.keyActions.bind();
+                Game.connectAndStart();
             } else {
                 alert('nickname must be alphanumeric');
             }
@@ -81,11 +113,11 @@ var canvas = document.getElementById('canvas'),
 
                     c.font = '12pt Montserrat Alternates';
                     c.fillText(name, x, y - 15);
-                }
+                },
             };
 
             d.fillAll(d.white);
-        }
+        },
     };
 
 Game.init();
