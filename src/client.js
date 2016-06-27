@@ -7,6 +7,7 @@ var canvas = document.getElementById('canvas'),
             up: false,
             down: false,
         },
+    socket,
     Game = {
         init: function() {
             this.bindUIActions();
@@ -68,12 +69,20 @@ var canvas = document.getElementById('canvas'),
             var regex = /^\w*$/;
             var nick = document.getElementById('nameInput').value;
             if (regex.test(nick)) {
-                UI.hideStartMenu();
                 Game.keyActions.bind();
                 Server.connectAndStart(nick);
             } else {
                 alert('nickname must be alphanumeric');
             }
+        },
+
+        startForRealz: function() {
+            UI.hideStartMenu();
+            // TODO
+        },
+
+        end: function() {
+            // TODO
         },
 
         draw: function() {
@@ -116,7 +125,26 @@ var canvas = document.getElementById('canvas'),
     },
     Server = {
         connectAndStart: function(nick) {
-            // TODO
+            socket = io('http://localhost:3000');
+
+            socket.on('connect', function(){
+                socket.emit('nick', nick);
+            });
+            socket.on('ready', function() {
+                Game.startForRealz();
+            });
+            socket.on('update', function(stuff) {
+                Game.draw(stuff);
+            });
+            socket.on('disconnect', function(){
+                Game.end();
+            });
+            socket.on('kick', function() {
+                Game.end();
+            });
+        },
+        update: function() {
+            socket.emit('update', v.keys);
         },
     },
     UI = {
