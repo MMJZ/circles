@@ -125,25 +125,30 @@ var canvas = document.getElementById('canvas'),
     },
     Server = {
         connectAndStart: function(nick) {
-            socket = io('http://localhost:3000');
-            UI.showStartMessage('connecting...');
+            try {
+                socket = io('http://localhost:3000');
+                UI.showStartMessage('connecting...');
 
-            socket.on('connect', function(){
-                UI.showStartMessage('connected');
-                socket.emit('nick', nick);
-            });
-            socket.on('ready', function() {
-                Game.startForRealz();
-            });
-            socket.on('update', function(stuff) {
-                Game.draw(stuff);
-            });
-            socket.on('disconnect', function(){
-                Game.end();
-            });
-            socket.on('kick', function() {
-                Game.end();
-            });
+                socket.on('connect', function(){
+                    UI.showStartMessage('connected');
+                    socket.emit('nick', nick);
+                });
+                socket.on('ready', function() {
+                    Game.startForRealz();
+                });
+                socket.on('update', function(stuff) {
+                    Game.draw(stuff);
+                });
+                socket.on('disconnect', function(){
+                    Game.end();
+                });
+                socket.on('kick', function() {
+                    Game.end();
+                });
+            } catch (e) {
+                if (e instanceof ReferenceError) UI.showStartMessage('server is down :(');
+                else UI.showStartMessage('I have no idea what went wrong ¯\\_(ツ)_/¯');
+            }
         },
         update: function() {
             socket.emit('update', v.keys);
