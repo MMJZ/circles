@@ -7,6 +7,8 @@ var canvas = document.getElementById('canvas'),
             up: false,
             down: false,
         },
+        loopID: null,
+    },
     socket,
     Game = {
         init: function() {
@@ -77,12 +79,18 @@ var canvas = document.getElementById('canvas'),
         },
 
         startForRealz: function() {
+            var gameLoop = function() {
+                v.loopID = window.requestAnimationFrame( gameLoop );
+
+                Server.update();
+            };
+
             UI.hideStartMenu();
-            // TODO
+            gameLoop();
         },
 
         end: function() {
-            // TODO
+            window.cancelAnimationFrame(v.loopID);
         },
 
         draw: function() {
