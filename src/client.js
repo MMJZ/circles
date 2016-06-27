@@ -7,11 +7,20 @@ var canvas = document.getElementById('canvas'),
             up: false,
             down: false,
         },
+        loopID: null,
+        player: {
+            name: null,
+            id: null,
+            x: -100,
+            y: -100,
+        },
+        players: [],
+    },
+    socket,
     Game = {
         init: function() {
             this.bindUIActions();
             this.bindWindowResize();
-            c.textAlign = 'center';
         },
 
         bindUIActions: function() {
@@ -46,39 +55,49 @@ var canvas = document.getElementById('canvas'),
                 window.removeEventListener('keyup', this.keyupHandler);
             },
             keydownHandler: function(e) {
-                console.log(e);
-                // TODO
+                switch (e.keyCode) {
+                    case 37: v.keys.left  = true; break;
+                    case 38: v.keys.up    = true; break;
+                    case 39: v.keys.right = true; break;
+                    case 40: v.keys.down  = true; break;
+                }
             },
             keyupHandler: function(e) {
-                console.log(e);
-                // TODO
+                switch (e.keyCode) {
+                    case 37: v.keys.left  = false; break;
+                    case 38: v.keys.up    = false; break;
+                    case 39: v.keys.right = false; break;
+                    case 40: v.keys.down  = false; break;
+                }
             },
-        },
-
-        connectAndStart: function() {
-            // TODO
         },
 
         begin: function() {
-            var hideStartMenu = function() {
-                var a = document.getElementById('startMenu');
-                a.addEventListener('animationend', function() {
-                    a.className = 'hidden';
-                }, false);
-                a.className = 'animate';
-                window.focus();
-            };
-
             // valid nickname - alphanumeric and underscore
             var regex = /^\w*$/;
             var nick = document.getElementById('nameInput').value;
             if (regex.test(nick)) {
-                hideStartMenu();
                 Game.keyActions.bind();
-                Game.connectAndStart();
+                v.player.name = nick;
+                Server.connectAndStart();
             } else {
-                alert('nickname must be alphanumeric');
+                UI.showStartMessage('nickname must be alphanumeric');
             }
+        },
+
+        startForRealz: function() {
+            var gameLoop = function() {
+                v.loopID = window.requestAnimationFrame( gameLoop );
+
+                Server.update();
+            };
+
+            UI.hideStartMenu();
+            gameLoop();
+        },
+
+        end: function() {
+            window.cancelAnimationFrame(v.loopID);
         },
 
         draw: function() {
@@ -116,7 +135,70 @@ var canvas = document.getElementById('canvas'),
                 },
             };
 
+            // background
             d.fillAll(d.white);
+            c.textAlign = 'center';
+
+            // draw all players
+            var p;
+            for (var i = 0; i < v.players.length; i++) {
+                p = v.players[i];
+                if (p.id == v.player.id) {
+                    v.player.x = p.x;
+                    v.player.y = p.y;
+                } else {
+                    d.player(p.x, p.y, p.name, true, false);
+                }
+            }
+
+            // draw me last
+            d.player(v.player.x, v.player.y, v.player.name, true, true);
+        },
+    },
+    Server = {
+        connectAndStart: function() {
+            try {
+                socket = io('http://localhost:3000');
+                UI.showStartMessage('connecting...');
+
+                socket.on('connect', function(){
+                    UI.showStartMessage('connected');
+                    v.player.id = '/#' + socket.id;
+                    socket.emit('nick', v.player);
+                });
+                socket.on('ready', function() {
+                    Game.startForRealz();
+                });
+                socket.on('update', function(stuff) {
+                    Game.draw(stuff);
+                });
+                socket.on('disconnect', function(){
+                    Game.end();
+                });
+                socket.on('kick', function() {
+                    Game.end();
+                });
+            } catch (e) {
+                if (e instanceof ReferenceError) UI.showStartMessage('server is down :(');
+                else UI.showStartMessage('I have no idea what went wrong ¯\\_(ツ)_/¯');
+            }
+        },
+        update: function() {
+            socket.emit('update', v.keys);
+        },
+    },
+    UI = {
+        hideStartMenu: function() {
+            var a = document.getElementById('startMenu');
+            a.addEventListener('animationend', function() {
+                a.className = 'hidden';
+            }, false);
+            a.className = 'animate';
+            window.focus();
+        },
+        showStartMessage: function(msg) {
+            var m = document.getElementById('message');
+            m.innerHTML = msg;
         },
     };
 
