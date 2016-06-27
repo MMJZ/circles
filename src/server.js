@@ -68,6 +68,9 @@ function stopTicking(){
 function doGameTick(){
     
     time += 1;
+    
+    if(time === maxTime) endRound();
+    
     var player;
     
     // Movement
@@ -128,6 +131,18 @@ function doGameTick(){
     
 }
 
+function endRound(){
+    time = 0;
+    io.sockets.emit('roundEnd');
+    for(var i = 0; i < users.length; i++){
+        if(users[i].inner){
+            users[i].score += users.length - 1;
+        }else{
+            users.inner = true;
+        }
+    }
+}
+
 // Socketing
 
 io.on('connection', function(socket) {
@@ -178,7 +193,7 @@ io.on('connection', function(socket) {
         var indexx = findIndex(users, currentPlayer.id);
         if (indexx > -1) users.splice(indexx, 1);
         console.log('info : ' + currentPlayer.name + ' disconnected');
-        socket.broadcast.emit('playerDisconnect', { name: currentPlayer.name });
+        if(users.length === 0) stopTicking();
     });
     
     socket.on('ping', function () {
