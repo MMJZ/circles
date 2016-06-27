@@ -144,7 +144,7 @@ var canvas = document.getElementById('canvas'),
 
                 socket.on('connect', function(){
                     UI.showStartMessage('connected');
-                    v.player.id = socket.id;
+                    v.player.id = '/#' + socket.id;
                     socket.emit('nick', v.player);
                 });
                 socket.on('ready', function() {
