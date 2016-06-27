@@ -87,5 +87,13 @@ h1 {
     font-family: 'Montserrat Alternates', sans-serif;
     font-size: 3em;
     color: #fafafa;
-    margin: 0.2em 1em 0.5em;
+    margin: 0.2em 1em 0;
+}
+
+#startMenu #message {
+    color: #dedede;
+    font-family: Roboto;
+    font-style: italic;
+    height: 1em;
+    margin: 0.3em 0.3em 0.7em;
 }

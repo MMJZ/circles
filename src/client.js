@@ -72,7 +72,7 @@ var canvas = document.getElementById('canvas'),
                 Game.keyActions.bind();
                 Server.connectAndStart(nick);
             } else {
-                alert('nickname must be alphanumeric');
+                UI.showStartMessage('nickname must be alphanumeric');
             }
         },
 
@@ -126,8 +126,10 @@ var canvas = document.getElementById('canvas'),
     Server = {
         connectAndStart: function(nick) {
             socket = io('http://localhost:3000');
+            UI.showStartMessage('connecting...');
 
             socket.on('connect', function(){
+                UI.showStartMessage('connected');
                 socket.emit('nick', nick);
             });
             socket.on('ready', function() {
@@ -155,6 +157,10 @@ var canvas = document.getElementById('canvas'),
             }, false);
             a.className = 'animate';
             window.focus();
+        },
+        showStartMessage: function(msg) {
+            var m = document.getElementById('message');
+            m.innerHTML = msg;
         },
     };
 
