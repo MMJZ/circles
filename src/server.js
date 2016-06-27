@@ -148,7 +148,7 @@ io.on('connection', function(socket) {
             socket.disconnect();
         }else{
             console.log('info : ' + pplayer.name + ' connected');
-
+            socket.emit('ready');
             if(!running) startTicking();
             
             currentPlayer = {
