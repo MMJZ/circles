@@ -29,7 +29,7 @@ var canvas = document.getElementById('canvas'),
             var input = document.getElementById('nameInput');
             input.addEventListener('keypress', function(e) {
                 // enter key
-                if (e.keyCode == 13) {
+                if (e.keyCode === 13) {
                     Game.begin();
                 }
             });
@@ -143,7 +143,7 @@ var canvas = document.getElementById('canvas'),
             var p;
             for (var i = 0; i < v.players.length; i++) {
                 p = v.players[i];
-                if (p.id == v.player.id) {
+                if (p.id === v.player.id) {
                     v.player.x = p.x;
                     v.player.y = p.y;
                 } else {
