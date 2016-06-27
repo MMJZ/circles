@@ -109,6 +109,8 @@ function doGameTick(){
                 centrePoint - inP + playerRadius)){
                     player.inner = false;
                 // emit something to do with knockout
+                    player.score -= countLivingPlayersAndInc();
+                    if(player.score < 0) player.score = 0;
             }
         }else{
             if(!inDistanceSq(
@@ -116,6 +118,7 @@ function doGameTick(){
                 centrePoint - player.pos.y,
                 centrePoint - outP - playerRadius)){
                     // bounce inside outside boundary
+                    player.score = 0;
             }else if(!outDistanceSq(
                 centrePoint - player.pos.x,
                 centrePoint - player.pos.y,
@@ -135,11 +138,8 @@ function endRound(){
     time = 0;
     io.sockets.emit('roundEnd');
     for(var i = 0; i < users.length; i++){
-        if(users[i].inner){
-            users[i].score += users.length - 1;
-        }else{
-            users.inner = true;
-        }
+        if(users[i].inner) users[i].score += users.length - 1;
+        else users.inner = true;
     }
 }
 
@@ -246,13 +246,9 @@ function bashCircles(a, b){
 
 // Util Functions
 
-function sq(x){
-    return x * x;
-}
-
-function getNow(){
-    return new Date().getTime();
-}
+function sq(x){ return x * x;}
+function getNow(){ return new Date().getTime();}
+function validNick(nickname) { return /^\w*$/.exec(nickname) !== null;}
 
 function findIndex(arr, id){
     var len = arr.length;
@@ -260,9 +256,13 @@ function findIndex(arr, id){
     return -1;
 }
 
-function validNick(nickname) {
-    var regex = /^\w*$/;
-    return regex.exec(nickname) !== null;
+function countLivingPlayersAndInc(){
+    var r = 0;
+    for(var i = 0; i < users.length; i++) if(users[i].inner){
+        users[i].score += 1;
+        r++;
+    }
+    return r;
 }
 
 // Startup
