@@ -8,6 +8,10 @@ var canvas = document.getElementById('canvas'),
             down: false,
         },
         loopID: null,
+        player: {
+            name: null,
+            id: null,
+        },
     },
     socket,
     Game = {
@@ -72,7 +76,8 @@ var canvas = document.getElementById('canvas'),
             var nick = document.getElementById('nameInput').value;
             if (regex.test(nick)) {
                 Game.keyActions.bind();
-                Server.connectAndStart(nick);
+                v.player.name = nick;
+                Server.connectAndStart();
             } else {
                 UI.showStartMessage('nickname must be alphanumeric');
             }
@@ -132,14 +137,15 @@ var canvas = document.getElementById('canvas'),
         },
     },
     Server = {
-        connectAndStart: function(nick) {
+        connectAndStart: function() {
             try {
                 socket = io('http://localhost:3000');
                 UI.showStartMessage('connecting...');
 
                 socket.on('connect', function(){
                     UI.showStartMessage('connected');
-                    socket.emit('nick', nick);
+                    v.player.id = socket.id;
+                    socket.emit('nick', v.player);
                 });
                 socket.on('ready', function() {
                     Game.startForRealz();
