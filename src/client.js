@@ -4,6 +4,7 @@ var canvas = document.getElementById('canvas'),
         init: function() {
             this.bindUIActions();
             this.bindWindowResize();
+            c.textAlign = 'center';
         },
 
         bindUIActions: function() {
@@ -52,6 +53,7 @@ var canvas = document.getElementById('canvas'),
             var d = {
                 white: '#fafafa',
                 black: '#1a1a1a',
+                radius: 8,
                 fillAll: function(fs) {
                     if (fs != undefined) c.fillStyle = fs;
                     c.fillRect(0, 0, canvas.width, canvas.height);
@@ -63,14 +65,26 @@ var canvas = document.getElementById('canvas'),
                     c.closePath();
                     c.fill();
                 },
+                // centre circle
                 ccircle: function(r, fs) {
                     this.circle(canvas.width/2, canvas.height/2, r, fs);
+                },
+                player: function(x, y, name, dark, you) {
+                    var colour = dark ? d.black : d.white;
+                    if (you) {
+                        d.circle(x, y, d.radius, '#5599BB');
+                        c.fillStyle = '#5599BB';
+                    } else {
+                        d.circle(x, y, d.radius, colour);
+                        // ^ this set the fillstyle so i don't have to
+                    }
+
+                    c.font = '12pt Montserrat Alternates';
+                    c.fillText(name, x, y - 15);
                 }
             };
 
             d.fillAll(d.white);
-
-            //TODO
         }
     };
 
