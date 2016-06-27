@@ -2,10 +2,9 @@
 
 // Under the hood setup
 
-var express = require('express');
-var app = express();
-var http = require('http').Server(app);
-var io = require('socket.io')(http);
+var app = require('express')();
+var server = require('http').createServer(app);
+var io = require('socket.io')(server);
 
 // Config static variables
 
@@ -31,6 +30,8 @@ var users = [];
 var sockets = {};
 var leaderboard = [];
 var leaderboardChanged = false;
+var running = false;
+var simulator;
 
 // World derived Variables
 
@@ -47,6 +48,22 @@ function getSecondsLeft(){
 }
 
 // Game Ticking
+
+function startTicking(){
+    running = true;
+    time = 0;
+    leaderboard = [];
+    console.log("info : Starting Tick");
+    simulator = setInterval(function(){
+        doGameTick();
+    }, tickLength);
+}
+
+function stopTicking(){
+    running = false;
+    clearInterval(simulator);
+    console.log("info : sim : stop"); // for the trees mate
+}
 
 function doGameTick(){
     
@@ -132,6 +149,8 @@ io.on('connection', function(socket) {
         }else{
             console.log('info : ' + pplayer.name + ' connected');
 
+            if(!running) startTicking();
+            
             currentPlayer = {
                 id: socket.id,
                 pos: getFreePosition(),
@@ -229,4 +248,11 @@ function findIndex(arr, id){
 function validNick(nickname) {
     var regex = /^\w*$/;
     return regex.exec(nickname) !== null;
+}
+
+// Startup
+
+initial();
+function initial(){
+    server.listen(3000);
 }
