@@ -11,14 +11,16 @@ var canvas = document.getElementById('canvas'),
         player: {
             name: null,
             id: null,
+            x: -100,
+            y: -100,
         },
+        players: [],
     },
     socket,
     Game = {
         init: function() {
             this.bindUIActions();
             this.bindWindowResize();
-            c.textAlign = 'center';
         },
 
         bindUIActions: function() {
@@ -133,7 +135,24 @@ var canvas = document.getElementById('canvas'),
                 },
             };
 
+            // background
             d.fillAll(d.white);
+            c.textAlign = 'center';
+
+            // draw all players
+            var p;
+            for (var i = 0; i < v.players.length; i++) {
+                p = v.players[i];
+                if (p.id == v.player.id) {
+                    v.player.x = p.x;
+                    v.player.y = p.y;
+                } else {
+                    d.player(p.x, p.y, p.name, true, false);
+                }
+            }
+
+            // draw me last
+            d.player(v.player.x, v.player.y, v.player.name, true, true);
         },
     },
     Server = {
