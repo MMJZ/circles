@@ -1,5 +1,40 @@
 var canvas = document.getElementById('canvas'),
     c = canvas.getContext('2d'),
+    // drawing stuff
+    d = {
+        white: '#fafafa',
+        black: '#1a1a1a',
+        radius: 8,
+        fillAll: function(fs) {
+            if (fs != undefined) c.fillStyle = fs;
+            c.fillRect(0, 0, canvas.width, canvas.height);
+        },
+        circle: function(x, y, r, fs) {
+            if (fs != undefined) c.fillStyle = fs;
+            c.beginPath();
+            c.arc(x, y, r, 0, Math.PI*2, true);
+            c.closePath();
+            c.fill();
+        },
+        // centre circle
+        ccircle: function(r, fs) {
+            this.circle(canvas.width/2, canvas.height/2, r, fs);
+        },
+        player: function(x, y, name, dark, you) {
+            var colour = dark ? d.black : d.white;
+            if (you) {
+                d.circle(x, y, d.radius, '#5599BB');
+                c.fillStyle = '#5599BB';
+            } else {
+                d.circle(x, y, d.radius, colour);
+                // ^ this set the fillstyle so i don't have to
+            }
+
+            c.font = '12pt Montserrat Alternates';
+            c.fillText(name, x, y - 15);
+        },
+    },
+    // vars
     v = {
         keys: {
             left: false,
@@ -101,40 +136,6 @@ var canvas = document.getElementById('canvas'),
         },
 
         draw: function() {
-            var d = {
-                white: '#fafafa',
-                black: '#1a1a1a',
-                radius: 8,
-                fillAll: function(fs) {
-                    if (fs != undefined) c.fillStyle = fs;
-                    c.fillRect(0, 0, canvas.width, canvas.height);
-                },
-                circle: function(x, y, r, fs) {
-                    if (fs != undefined) c.fillStyle = fs;
-                    c.beginPath();
-                    c.arc(x, y, r, 0, Math.PI*2, true);
-                    c.closePath();
-                    c.fill();
-                },
-                // centre circle
-                ccircle: function(r, fs) {
-                    this.circle(canvas.width/2, canvas.height/2, r, fs);
-                },
-                player: function(x, y, name, dark, you) {
-                    var colour = dark ? d.black : d.white;
-                    if (you) {
-                        d.circle(x, y, d.radius, '#5599BB');
-                        c.fillStyle = '#5599BB';
-                    } else {
-                        d.circle(x, y, d.radius, colour);
-                        // ^ this set the fillstyle so i don't have to
-                    }
-
-                    c.font = '12pt Montserrat Alternates';
-                    c.fillText(name, x, y - 15);
-                },
-            };
-
             // background
             d.fillAll(d.white);
             c.textAlign = 'center';
