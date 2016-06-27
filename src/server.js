@@ -12,16 +12,17 @@ var io = require('socket.io')(http);
 var tickLength = 20; // framerate = 1000/20 = 50fps.
 var playerRadius = 20;
 var playerMaxSpeed = 20;
-var playerAcceleration = 20;
+var playerAcceleration = 2;
 var outerBoundarySize = 6000;
-var innerBoundarySize = 3000;
 var gameLength = 1000 * 60;
+var maxLag = 6000;
 
 // Deduced static variables
 
 var maxTime = gameLength / tickLength;
-var boundarySpeed = innerBoundarySize / (2 * maxTime);
-var innerBoundaryStart = (outerBoundarySize - innerBoundarySize) / 2;
+var boundarySpeed = outerBoundarySize / (4 * maxTime);
+var innerBoundaryStart = outerBoundarySize / 4;
+var centrePoint = outerBoundarySize / 2;
 
 // World variables
 
@@ -37,14 +38,77 @@ function getInnerBoundaryPosition(){
     return innerBoundaryStart + time * boundarySpeed;
 }
 
-function getOuterBoundaryPisition(){
+function getOuterBoundaryPosition(){
     return time * boundarySpeed;
+}
+
+function getSecondsLeft(){
+    return Math.ceil((1 - time / maxTime) * gameLength / 1000);
 }
 
 // Game Ticking
 
 function doGameTick(){
+    
     time += 1;
+    var player;
+    
+    // Movement
+    
+    for(var i = 0; i < users.length; i++){
+        player = users[i];
+        if(player.lastUpdate < getNow() - maxLag){
+            sockets[player.id].emit('kick', 'lagging out');
+            sockets[player.id].disconnect();
+        }
+        if(player.keys.left) player.vel.x -= playerAcceleration;
+        if(player.keys.up) player.vel.y -= playerAcceleration;
+        if(player.keys.down) player.vel.y += playerAcceleration;
+        if(player.keys.right) player.vel.x += playerAcceleration;
+        if(player.vel.x > playerMaxSpeed) player.vel.x = playerMaxSpeed;
+        if(player.vel.x < -playerMaxSpeed) player.vel.x = -playerMaxSpeed;
+        if(player.vel.y > playerMaxSpeed) player.vel.y = playerMaxSpeed;
+        if(player.vel.y < -playerMaxSpeed) player.vel.y = -playerMaxSpeed;
+        player.pos.x += player.vel.x;
+        player.pos.y += player.vel.y;
+    }
+    
+    // Collisions
+    
+    // Touch outer circle sets score to 0
+    
+    var outP = getOuterBoundaryPosition();
+    var inP = getInnerBoundaryPosition();
+    
+    for(i = 0; i < users.length - 1; i++){
+        player = users[i];
+        if(player.inner){
+            if(outDistanceSq(
+                centrePoint - player.pos.x,
+                centrePoint - player.pos.y,
+                centrePoint - inP + playerRadius)){
+                    player.inner = false;
+                // emit something to do with knockout
+            }
+        }else{
+            if(!inDistanceSq(
+                centrePoint - player.pos.x,
+                centrePoint - player.pos.y,
+                centrePoint - outP - playerRadius)){
+                    // bounce inside outside boundary
+            }else if(!outDistanceSq(
+                centrePoint - player.pos.x,
+                centrePoint - player.pos.y,
+                centrePoint - inP + playerRadius)){
+                    // boundary outside inside boundary
+            }
+        }
+    }
+    
+    for(i = 0; i < users.length - 1; i++) for(var j = i + 1; j < users.length; j++) 
+        if(isTouching(users[i], users[j])) bashCircles(users[i], users[j]);
+    
+    
 }
 
 // Socketing
@@ -55,18 +119,18 @@ io.on('connection', function(socket) {
 
     var currentPlayer;
 
-    socket.on('nick', function(player) {
+    socket.on('nick', function(pplayer) {
 
-        console.log('info : ' + player.name + ' connecting');
+        console.log('info : ' + pplayer.name + ' connecting');
 
-        if(findIndex(users, player.id) > -1){
+        if(findIndex(users, pplayer.id) > -1){
             console.log('cerr : player is already connected');
             socket.disconnect();
-        }else if(!validNick(player.name)){
-            socket.emit('kick', 'Nicked by the nick :(');
+        }else if(!validNick(pplayer.name)){
+            socket.emit('kick', 'nicked by the nick :(');
             socket.disconnect();
         }else{
-            console.log('info : ' + player.name + ' connected');
+            console.log('info : ' + pplayer.name + ' connected');
 
             currentPlayer = {
                 id: socket.id,
@@ -75,10 +139,19 @@ io.on('connection', function(socket) {
                     x: 0,
                     y: 0
                 },
-                name: player.name,
-                radius: playerRadius,
-                lastUpdate: new Date().getTime()
+                name: pplayer.name,
+                keys: {
+                    left: false,
+                    up: false,
+                    right: false,
+                    down: false
+                },
+                inner: false,
+                score: 0,
+                lastUpdate: getNow()
             };
+            users.push(currentPlayer);
+            console.log('info : ' + users.length + ' players connected');
         }
     });
 
@@ -87,6 +160,15 @@ io.on('connection', function(socket) {
         if (indexx > -1) users.splice(indexx, 1);
         console.log('info : ' + currentPlayer.name + ' disconnected');
         socket.broadcast.emit('playerDisconnect', { name: currentPlayer.name });
+    });
+    
+    socket.on('ping', function () {
+        socket.emit('pong');
+    });
+    
+    socket.on('update', function(keys) {
+        currentPlayer.lastUpdate = getNow();
+        currentPlayer.keys = keys;
     });
 });
 
@@ -100,35 +182,43 @@ function getFreePosition(){
 }
 
 function isTouching(a, b){
-    var ar = a.radius, br = b.radius;
-    var ax1 = a.x, bx1 = b.x, ay1 = a.y, by1 = b.y;
-    var ax2 = ax1 + 2*ar, ay2 = ay1 + 2*ar, bx2 = bx1 + 2*br, by2 = by2 + 2*br;
+    var r = playerRadius;
+    var ax1 = a.pos.x-r, bx1 = b.pos.x-r, ay1 = a.pos.y-r, by1 = b.pos.y-r;
+    var ax2 = a.pos.x+r, ay2 = b.pos.x+r, bx2 = a.pos.y+r, by2 = b.pos.y+r;
     if(ax2 < bx1 || ay2 < by1 || bx2 < ax1 || by2 < ay1) return false;
-    var axc = ax1 + ar, ayc = ay1 + ar, bxc = bx1 + br, byc = by1 + br;
-    return sq(bxc - axc) + sq(byc - ayc) < sq(ar + br);
+    return inDistanceSq(b.pos.x - a.pos.x, b.pos.y - a.pos.y, r + r);
 }
 
-function sq(x){
-    return x * x;
+function inDistanceSq(a, b, c){
+    return sq(a) + sq(b) < sq(c);
+}
+    
+function outDistanceSq(a, b, c){
+    return sq(a) + sq(b) > sq(c);
 }
 
 function bashCircles(a, b){
-    var xDist = a.x - b.x, yDist = a.y - b.y,
-        xVel = b.vx - a.vx, yVel = b.vy - a.vy;
+    var xDist = a.pos.x - b.pos.x, yDist = a.pos.y - b.pos.y,
+        xVel = b.vel.x - a.vel.x, yVel = b.vel.y - a.vel.y;
     var dotProduct = xDist * xVel + yDist * yVel;
     if(dotProduct > 0){
         var collisionScale = dotProduct / (sq(xDist) + sq(yDist));
         var xCollision = xDist * collisionScale,
             yCollision = yDist * collisionScale;
-        var combinedMass = a.radius + b.radius;
-        var collWA = 2 * b.radius / combinedMass,
-            collWB = 2 * a.radius / combinedMass;
-        a.vel.set0(collWA * xCollision, collWA * yCollision);
-        b.vel.set0(-collWB * xCollision, -collWB * yCollision);
+        a.vel = {x: xCollision, y: yCollision};
+        b.vel = {x: -xCollision, y: -yCollision};
     }
 }
 
 // Util Functions
+
+function sq(x){
+    return x * x;
+}
+
+function getNow(){
+    return new Date().getTime();
+}
 
 function findIndex(arr, id){
     var len = arr.length;
