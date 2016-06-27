@@ -50,18 +50,18 @@ var canvas = document.getElementById('canvas'),
             },
             keydownHandler: function(e) {
                 switch (e.keyCode) {
-                    case 37: v.keys.left = true; break;
-                    case 38: v.keys.up = true; break;
+                    case 37: v.keys.left  = true; break;
+                    case 38: v.keys.up    = true; break;
                     case 39: v.keys.right = true; break;
-                    case 40: v.key.down = true; break;
+                    case 40: v.keys.down  = true; break;
                 }
             },
             keyupHandler: function(e) {
                 switch (e.keyCode) {
-                    case 37: v.keys.left = false; break;
-                    case 38: v.keys.up = false; break;
+                    case 37: v.keys.left  = false; break;
+                    case 38: v.keys.up    = false; break;
                     case 39: v.keys.right = false; break;
-                    case 40: v.key.down = false; break;
+                    case 40: v.keys.down  = false; break;
                 }
             },
         },
