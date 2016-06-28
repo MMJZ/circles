@@ -182,6 +182,8 @@ var canvas = document.getElementById('canvas'),
 
         end: function() {
             window.cancelAnimationFrame(v.loopID);
+            d.fillAll(d.white, true);
+            UI.showStartMenu();
         },
 
         draw: function() {
@@ -256,12 +258,20 @@ var canvas = document.getElementById('canvas'),
         },
     },
     UI = {
+        showStartMenu: function() {
+            var a = document.getElementById('startMenu');
+            a.addEventListener('animationend', function() {
+                a.className = '';
+            }, false);
+            a.className = '';
+            window.focus();
+        },
         hideStartMenu: function() {
             var a = document.getElementById('startMenu');
             a.addEventListener('animationend', function() {
                 a.className = 'hidden';
             }, false);
-            a.className = 'animate';
+            a.className = 'animateHide';
             window.focus();
         },
         showStartMessage: function(msg) {
