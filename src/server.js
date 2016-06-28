@@ -131,7 +131,7 @@ function doGameTick(){
     var outInf = [];
     
     for(i = 0; i < users.length; i++){
-        var playerOutInf = users[i].id;
+        var playerOutInf = users[i];
         outInf.push({
             pos: playerOutInf.pos,
             vel: playerOutInf.vel,
