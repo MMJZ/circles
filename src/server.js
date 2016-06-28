@@ -28,8 +28,6 @@ var centrePoint = outerBoundarySize / 2;
 var time = 0;
 var users = [];
 var sockets = {};
-var leaderboard = [];
-var leaderboardChanged = false;
 var running = false;
 var simulator;
 
@@ -52,7 +50,6 @@ function getSecondsLeft(){
 function startTicking(){
     running = true;
     time = 0;
-    leaderboard = [];
     console.log("info : Starting Tick");
     simulator = setInterval(function(){
         doGameTick();
@@ -102,28 +99,32 @@ function doGameTick(){
     
     for(i = 0; i < users.length - 1; i++){
         player = users[i];
+        var dx = centrePoint - player.pos.x;
+        var dy = centrePoint - player.pos.y;
+        var dx2 = sq(dx), dy2 = sq(dy);
         if(player.inner){
-            if(outDistanceSq(
-                centrePoint - player.pos.x,
-                centrePoint - player.pos.y,
-                centrePoint - inP + playerRadius)){
-                    player.inner = false;
-                // emit something to do with knockout
-                    player.score -= countLivingPlayersAndInc();
-                    if(player.score < 0) player.score = 0;
+            if(dx2 + dy2 > sq(centrePoint - inP + playerRadius)){
+                player.inner = false;
+                var nscore = countLivingPlayersAndInc();
+                player.score -= nscore;
+                if(player.score < 0) player.score = 0;
+                sockets[player.id].emit('dead', nscore);
             }
         }else{
-            if(!inDistanceSq(
-                centrePoint - player.pos.x,
-                centrePoint - player.pos.y,
-                centrePoint - outP - playerRadius)){
-                    // bounce inside outside boundary
-                    player.score = 0;
-            }else if(!outDistanceSq(
-                centrePoint - player.pos.x,
-                centrePoint - player.pos.y,
-                centrePoint - inP + playerRadius)){
-                    // boundary outside inside boundary
+            if(dx2 + dy2 >= sq(centrePoint - outP - playerRadius)){
+                var droot = Math.sqrt(dx2 + dy2);
+                var normalX = dx / droot;
+                var normalY = dy / droot;
+                var tangentX = -normalY;
+                var tangentY = normalX;
+                var normalSpeed = -(normalX * player.vel.x + normalY * player.vel.y);
+                var tangentSpeed = tangentX * player.vel.x + tangentY * player.vel.y;
+                player.vel = {
+                    x: normalSpeed * normalX + tangentSpeed * tangentX,
+                    y: normalSpeed * normalY + tangentSpeed * tangentY
+                };
+            }else if(dx2 + dy2 < sq(centrePoint - inP + playerRadius)){
+                // boundary outside inside boundary
             }
         }
     }
@@ -155,7 +156,14 @@ function endRound(){
         else users.inner = true;
     }
     users.sort(function(a, b) { return b.score - a.score; });
-    
+    var leaderboard = [];
+    for(i = 0; i < Math.min(10, users.length); i++){
+        leaderboard.push({
+            name: users[i].name,
+            score: users[i].score
+        });
+    }
+    for(i = 0; i < users.length; i++) sockets[users[i].id].emit('leaderboard', leaderboard);
 }
 
 // Socketing
@@ -178,6 +186,7 @@ io.on('connection', function(socket) {
             socket.disconnect();
         }else{
             console.log('info : ' + pplayer.name + ' connected');
+            sockets[socket.id] = socket;
             socket.emit('ready');
             if(!running) startTicking();
             
