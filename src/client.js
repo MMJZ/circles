@@ -89,7 +89,7 @@ var canvas = document.getElementById('canvas'),
         gridsize: {
             x: 6000,
             y: 6000,
-            spacing: 100,
+            spacing: 150,
         },
     },
     socket,
@@ -191,6 +191,7 @@ var canvas = document.getElementById('canvas'),
             window.cancelAnimationFrame(v.loopID);
             d.fillAll(d.white, true);
             UI.showStartMenu();
+            UI.showStartMessage('');
         },
 
         draw: function() {
