@@ -85,6 +85,7 @@ var canvas = document.getElementById('canvas'),
             y: 0,
         },
         players: [],
+        time: null,
         gridsize: {
             x: 6000,
             y: 6000,
@@ -198,15 +199,28 @@ var canvas = document.getElementById('canvas'),
             for (var i = 0; i < v.players.length; i++) {
                 p = v.players[i];
                 if (p.id === v.player.id) {
-                    v.player.x = p.x;
-                    v.player.y = p.y;
+                    v.player.x = p.pos.x;
+                    v.player.y = p.pos.y;
                 } else {
-                    d.player(p.x, p.y, p.name, true, false);
+                    d.player(p.pos.x, p.pos.y, p.name, true, false);
                 }
             }
 
             // draw me last
             d.player(v.player.x, v.player.y, v.player.name, true, true);
+        },
+
+        setViewAndPlayer: function() {
+            var me = v.players.find(function(p) {
+                return p.id === v.player.id;
+            });
+            v.player.x = me.pos.x;
+            v.player.y = me.pos.y;
+
+            v.view.left   = v.player.x - v.centre.x;
+            v.view.top    = v.player.y - v.centre.y;
+            v.view.right  = v.player.x + v.centre.x;
+            v.view.bottom = v.player.y + v.centre.y;
         },
     },
     Server = {
@@ -223,8 +237,11 @@ var canvas = document.getElementById('canvas'),
                 socket.on('ready', function() {
                     Game.startForRealz();
                 });
-                socket.on('update', function(stuff) {
-                    Game.draw(stuff);
+                socket.on('update', function(players, time) {
+                    v.players = players;
+                    Game.setViewAndPlayer();
+                    v.time = time;
+                    Game.draw();
                 });
                 socket.on('disconnect', function(){
                     Game.end();
