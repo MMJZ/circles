@@ -14,24 +14,24 @@ var canvas = document.getElementById('canvas'),
             }
         },
         grid: function() {
-            var xstart = v.player.x < v.centre.x ? 0 : v.view.left - (v.view.left % v.gridsize.spacing),
-                xend = (v.gridsize.x - v.player.x) < v.centre.x ? v.gridsize.x : v.view.right,
-                ystart = v.player.y < v.centre.y ? 0 : v.view.top - (v.view.top % v.gridsize.spacing),
-                yend = (v.gridsize.y - v.player.y) < v.centre.y ? v.gridsize.y : v.player.y + v.centre.y;
+            var xmod = v.view.left % v.gridsize.spacing,
+                ymod = v.view.top % v.gridsize.spacing;
 
             c.strokeStyle = '#aaa';
             c.lineWidth = 1;
             var i;
-            for (i = xstart; i <= xend; i+= v.gridsize.spacing) {
+            for (i = v.view.left - xmod; i <= v.view.right; i+= v.gridsize.spacing) {
                 c.beginPath();
-                c.moveTo(i, ystart);
-                c.lineTo(i, yend);
+                c.moveTo(i, v.view.top);
+                c.lineTo(i, v.view.bottom);
+                c.closePath();
                 c.stroke();
             }
-            for (i = ystart; i <= yend; i+= v.gridsize.spacing) {
+            for (i = v.view.top - ymod; i <= v.view.bottom; i+= v.gridsize.spacing) {
                 c.beginPath();
-                c.moveTo(xstart, i);
-                c.lineTo(xend, i);
+                c.moveTo(v.view.left, i);
+                c.lineTo(v.view.right, i);
+                c.closePath();
                 c.stroke();
             }
         },
@@ -194,14 +194,14 @@ var canvas = document.getElementById('canvas'),
         },
 
         draw: function() {
-            // reset and translate
-            c.setTransform(1, 0, 0, 1, 0, 0);
-            c.translate(-v.view.left, -v.view.top);
-
             // background
             d.fillAll(d.white);
             d.grid();
             c.textAlign = 'center';
+
+            // reset and translate
+            c.setTransform(1, 0, 0, 1, 0, 0);
+            c.translate(-v.view.left, -v.view.top);
 
             // draw all players
             var p;
