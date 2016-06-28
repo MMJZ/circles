@@ -34,8 +34,12 @@ var canvas = document.getElementById('canvas'),
             }
         },
         boundary: function() {
-            var colour = v.whiteInner ? d.white : d.black;
-            d.circle(v.boundary.centre, v.boundary.centre, d.getInnerBoundaryRadius(), colour);
+            // draws the second area (not the innermost)
+            c.fillStyle = v.whiteInner ? d.black : d.white;
+            c.beginPath();
+            c.arc(v.boundary.centre, v.boundary.centre, d.getOuterBoundaryRadius(), 0, 2*Math.PI);
+            c.arc(v.boundary.centre, v.boundary.centre, d.getInnerBoundaryRadius(), 0, 2*Math.PI, true);
+            c.fill();
         },
         circle: function(x, y, r, fs) {
             if (fs !== undefined) c.fillStyle = fs;
@@ -98,7 +102,7 @@ var canvas = document.getElementById('canvas'),
             this.boundary.centre = this.boundary.outerSize / 2;
             this.boundary.speed = this.boundary.outerSize / (4 * this.maxTime);
         },
-        whiteInner: false,
+        whiteInner: true,
     },
     socket,
     Game = {
