@@ -65,9 +65,7 @@ function stopTicking(){
 function doGameTick(){
     
     time += 1;
-    
     if(time === maxTime) endRound();
-    
     var player;
     
     // Movement
@@ -91,8 +89,6 @@ function doGameTick(){
     }
     
     // Collisions
-    
-    // Touch outer circle sets score to 0
     
     var outP = getOuterBoundaryPosition();
     var inP = getInnerBoundaryPosition();
@@ -124,7 +120,7 @@ function doGameTick(){
                     y: normalSpeed * normalY + tangentSpeed * tangentY
                 };
             }else if(dx2 + dy2 < sq(centrePoint - inP + playerRadius)){
-                // boundary outside inside boundary
+                bashCircles(player, {pos:{x:centrePoint,y:centrePoint},vel:{x:0,y:0}});
             }
         }
     }
@@ -145,7 +141,7 @@ function doGameTick(){
         });
     }
     
-    for(i = 0; i < users.length; i++) sockets[users[i].id].emit('update', outInf, time);
+    io.emit('update', outInf, time);
 }
 
 function endRound(){
@@ -169,15 +165,10 @@ function endRound(){
 // Socketing
 
 io.on('connection', function(socket) {
-
     console.log('info : user taking an interest');
-
     var currentPlayer;
-
     socket.on('nick', function(pplayer) {
-
         console.log('info : ' + pplayer.name + ' connecting');
-
         if(findIndex(users, pplayer.id) > -1){
             console.log('cerr : player is already connected');
             socket.disconnect();
@@ -220,9 +211,7 @@ io.on('connection', function(socket) {
         if(users.length === 0) stopTicking();
     });
     
-    socket.on('ping', function () {
-        socket.emit('pong');
-    });
+    socket.on('ping', function () {socket.emit('pong');});
     
     socket.on('update', function(keys) {
         currentPlayer.lastUpdate = getNow();
@@ -233,10 +222,24 @@ io.on('connection', function(socket) {
 // Circle Functions
 
 function getFreePosition(){
-    return {
-        x: 0,
-        y: 0
-    };
+    var minx = getOuterBoundaryPosition();
+    var range = outerBoundarySize - 2 * minx;
+    findloop:
+    while(true){
+        var tx = Math.random() * range + minx;
+        var ty = Math.random() * range + minx;
+        var dx2 = sq(centrePoint - tx), dy2 = sq(centrePoint - ty);
+        if(dx2 + dy2 < sq(centrePoint - getInnerBoundaryPosition() + playerRadius)) continue;
+        if(dx2 + dy2 > sq(centrePoint - getOuterBoundaryPosition() - playerRadius)) continue;
+        var recr = 2 * playerRadius;
+        var x1 = tx - recr, y1 = ty - recr, x2 = tx + recr, y2 = ty + recr;
+        for(var i = 0; i < users.length; i++){
+            var theirpos = users[i].pos;
+            if(theirpos.x >= x1 && theirpos.x <= x2 && theirpos.y >= y1 && theirpos.y <= y2) 
+                continue findloop;
+        }
+        return {x: tx, y: ty};
+    }
 }
 
 function isTouching(a, b){
@@ -244,15 +247,7 @@ function isTouching(a, b){
     var ax1 = a.pos.x-r, bx1 = b.pos.x-r, ay1 = a.pos.y-r, by1 = b.pos.y-r;
     var ax2 = a.pos.x+r, ay2 = b.pos.x+r, bx2 = a.pos.y+r, by2 = b.pos.y+r;
     if(ax2 < bx1 || ay2 < by1 || bx2 < ax1 || by2 < ay1) return false;
-    return inDistanceSq(b.pos.x - a.pos.x, b.pos.y - a.pos.y, r + r);
-}
-
-function inDistanceSq(a, b, c){
-    return sq(a) + sq(b) < sq(c);
-}
-    
-function outDistanceSq(a, b, c){
-    return sq(a) + sq(b) > sq(c);
+    return sq(b.pos.x - a.pos.x) + sq(b.pos.y - a.pos.y) < sq(r + r);
 }
 
 function bashCircles(a, b){
@@ -290,8 +285,4 @@ function countLivingPlayersAndInc(){
 }
 
 // Startup
-
-initial();
-function initial(){
-    server.listen(3000);
-}
+server.listen(3000);
