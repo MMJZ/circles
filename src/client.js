@@ -33,6 +33,11 @@ var canvas = document.getElementById('canvas'),
                 c.stroke();
             }
         },
+        boundary: function() {
+            var c = v.whiteInner ? d.white : d.black;
+            d.circle(v.boundary.centre, v.boundary.centre, d.getInnerBoundaryRadius(), c);
+            // d.circle(3000,3000,3000,d.black);
+        },
         circle: function(x, y, r, fs) {
             if (fs !== undefined) c.fillStyle = fs;
             c.beginPath();
@@ -55,6 +60,12 @@ var canvas = document.getElementById('canvas'),
                 d.circle(x, y, d.radius, colour);
                 c.fillText(name, x, y - 32);
             }
+        },
+        getOuterBoundaryRadius: function (){
+            return v.boundary.centre - v.time * v.boundary.speed;
+        },
+        getInnerBoundaryRadius: function (){
+            return v.boundary.centre - v.time * v.boundary.speed - v.boundary.innerStart;
         },
     },
     // vars
@@ -88,17 +99,21 @@ var canvas = document.getElementById('canvas'),
         gridSpacing: 150,
         gameLength: 1000 * 60,
         tickLength: 20,
-        maxTime: this.gameLength / this.tickLength,
         boundary: {
             outerSize: 6000,
-            innerStart: this.outerSize / 4,
-            centre: this.outerSize / 2,
-            speed: this.outerSize / (4 * this.maxTime),
         },
+        deriveVars: function() {
+            this.maxTime = this.gameLength / this.tickLength;
+            this.boundary.innerStart = this.boundary.outerSize / 4;
+            this.boundary.centre = this.boundary.outerSize / 2;
+            this.boundary.speed = this.boundary.outerSize / (4 * this.maxTime);
+        },
+        whiteInner: false,
     },
     socket,
     Game = {
         init: function() {
+            v.deriveVars();
             UI.bindUIActions();
             UI.bindWindowResize();
         },
@@ -166,6 +181,7 @@ var canvas = document.getElementById('canvas'),
 
             // background
             d.clearB();
+            d.boundary();
             d.grid();
             c.textAlign = 'center';
 
@@ -180,14 +196,6 @@ var canvas = document.getElementById('canvas'),
 
             // draw me last
             d.player(v.player.x, v.player.y, v.player.name, true, true);
-        },
-
-        getOuterBoundaryRadius: function (){
-            return v.boundary.centre - v.time * v.boundary.speed;
-        },
-
-        getInnerBoundaryRadius: function (){
-            return v.boundary.centre - v.time * v.boundary.speed - v.boundary.innerStart;
         },
 
         setView: function() {
