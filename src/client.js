@@ -119,7 +119,7 @@ var canvas = document.getElementById('canvas'),
         },
 
         physics: function() {
-            var now = new Date().getTime(),
+            var now = window.performance.now(),
                 timeDiff = now - v.lastupdatetime,
                 scale, p;
 
@@ -131,7 +131,7 @@ var canvas = document.getElementById('canvas'),
                 p.pos.y += p.vel.y * scale;
             }
 
-            v.lastupdatetime = new Date().getTime();
+            v.lastupdatetime = now;
         },
 
         startForRealz: function() {
@@ -143,7 +143,7 @@ var canvas = document.getElementById('canvas'),
                 Server.update();
             };
 
-            v.lastupdatetime = new Date().getTime();
+            v.lastupdatetime = window.performance.now();
             UI.hideStartMenu();
             gameLoop();
         },
