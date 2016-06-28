@@ -150,7 +150,6 @@ function doGameTick(){
         if(isTouching(users[i], users[j])) bashCircles(users[i], users[j]);
     
     var outInf = [];
-    
     for(i = 0; i < users.length; i++){
         var playerOutInf = users[i];
         outInf.push({
@@ -161,7 +160,6 @@ function doGameTick(){
             inner: playerOutInf.inner
         });
     }
-    
     io.emit('update', outInf, time);
 }
 
@@ -305,5 +303,3 @@ function countLivingPlayersAndInc(){
     }
     return r;
 }
-
-console.log('asd');
