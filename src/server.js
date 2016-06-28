@@ -24,7 +24,7 @@ var io = require('socket.io')(server);
 var tickLength = 20; // framerate = 1000/20 = 50fps.
 var playerRadius = 20;
 var playerMaxSpeed = 20;
-var playerAcceleration = 2;
+var playerAcceleration = 0.2;
 var outerBoundarySize = 6000;
 var gameLength = 1000 * 60;
 var maxLag = 6000;
@@ -54,6 +54,14 @@ function getOuterBoundaryPosition(){
     return time * boundarySpeed;
 }
 
+function getOuterBoundaryRadius(){
+    return centrePoint - time * boundarySpeed;
+}
+
+function getInnerBoundaryRadius(){
+    return centrePoint - time * boundarySpeed - innerBoundaryStart;
+}
+
 function getSecondsLeft(){
     return Math.ceil((1 - time / maxTime) * gameLength / 1000);
 }
@@ -72,7 +80,7 @@ function startTicking(){
 function stopTicking(){
     running = false;
     clearInterval(simulator);
-    console.log("info : sim : stop"); // for the trees mate
+    console.log("info : Trees saaaaaaaved"); // for the trees mate
 }
 
 function doGameTick(){
@@ -172,7 +180,7 @@ function endRound(){
             score: users[i].score
         });
     }
-    for(i = 0; i < users.length; i++) sockets[users[i].id].emit('leaderboard', leaderboard);
+    io.emit('leaderboard', leaderboard);
 }
 
 // Socketing
