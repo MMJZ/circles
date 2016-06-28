@@ -86,6 +86,7 @@ var canvas = document.getElementById('canvas'),
         },
         players: [],
         time: null,
+        lastupdatetime: null,
         gridSpacing: 150,
         gameLength: 1000 * 60,
         tickLength: 20,
@@ -118,12 +119,19 @@ var canvas = document.getElementById('canvas'),
         },
 
         physics: function() {
-            var p;
+            var now = new Date().getTime(),
+                timeDiff = now - v.lastupdatetime,
+                scale, p;
+
+            scale = timeDiff / v.tickLength;
+
             for(var i = 0; i < v.players.length; i++) {
                 p = v.players[i];
-                p.pos.x += p.vel.x;
-                p.pos.y += p.vel.y;
+                p.pos.x += p.vel.x * scale;
+                p.pos.y += p.vel.y * scale;
             }
+
+            v.lastupdatetime = new Date().getTime();
         },
 
         startForRealz: function() {
@@ -135,6 +143,7 @@ var canvas = document.getElementById('canvas'),
                 Server.update();
             };
 
+            v.lastupdatetime = new Date().getTime();
             UI.hideStartMenu();
             gameLoop();
         },
