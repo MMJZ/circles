@@ -4,7 +4,7 @@ var canvas = document.getElementById('canvas'),
     d = {
         white: '#fafafa',
         black: '#1a1a1a',
-        radius: 8,
+        radius: 20,
         fillAll: function(fs, dontCentreOnPlayer) {
             if (fs !== undefined) c.fillStyle = fs;
             if (dontCentreOnPlayer)
@@ -48,14 +48,14 @@ var canvas = document.getElementById('canvas'),
         },
         player: function(x, y, name, dark, you) {
             var colour = dark ? d.black : d.white;
-            c.font = '12pt Montserrat Alternates';
+            c.font = '16pt Montserrat Alternates';
 
             if (you) {
                 d.circle(x, y, d.radius, '#5599BB');
-                c.fillText(name, x, y - 15);
+                c.fillText(name, x, y - 32);
             } else {
                 d.circle(x, y, d.radius, colour);
-                c.fillText(name, x, y - 15);
+                c.fillText(name, x, y - 32);
             }
         },
     },
@@ -89,7 +89,7 @@ var canvas = document.getElementById('canvas'),
         gridsize: {
             x: 6000,
             y: 6000,
-            spacing: 60,
+            spacing: 100,
         },
     },
     socket,
@@ -226,7 +226,7 @@ var canvas = document.getElementById('canvas'),
     Server = {
         connectAndStart: function() {
             try {
-                socket = io('http://localhost:3000');
+                socket = io('http://circles-nerdycouple.rhcloud.com:8080');
                 UI.showStartMessage('connecting...');
 
                 socket.on('connect', function(){
