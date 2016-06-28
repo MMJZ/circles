@@ -44,10 +44,6 @@ var canvas = document.getElementById('canvas'),
             c.closePath();
             c.fill();
         },
-        // centre circle
-        ccircle: function(r, fs) {
-            this.circle(canvas.width/2, canvas.height/2, r, fs);
-        },
         player: function(x, y, name, dark, you) {
             var colour = you ? '#5599BB' : dark ? d.black : d.white;
             c.font = '16pt Montserrat Alternates';
