@@ -114,11 +114,18 @@ var canvas = document.getElementById('canvas'),
         bindWindowResize: function() {
             var resize = function() {
                 var w = window.innerWidth,
-                    h = window.innerHeight;
-                canvas.width = w;
-                canvas.height = h;
+                    h = window.innerHeight,
+                    s = window.devicePixelRatio || 1;
+
+                canvas.width = w * s;
+                canvas.height = h * s;
+                canvas.style.width = w;
+                canvas.style.height = h;
                 v.centre.x = w/2;
                 v.centre.y = h/2;
+                c.scale(s, s);
+
+                // if game running
                 if (v.loopID) {
                     Game.draw();
                 } else {
@@ -228,7 +235,9 @@ var canvas = document.getElementById('canvas'),
     Server = {
         connectAndStart: function() {
             try {
-                socket = io('http://circles-nerdycouple.rhcloud.com:8000');
+                socket = io('http://circles-nerdycouple.rhcloud.com:8000', {
+                    reconnection: false,
+                });
                 UI.showStartMessage('connecting...');
 
                 socket.on('connect', function(){
