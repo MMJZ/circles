@@ -226,7 +226,7 @@ var canvas = document.getElementById('canvas'),
     Server = {
         connectAndStart: function() {
             try {
-                socket = io('http://circles-nerdycouple.rhcloud.com:8080');
+                socket = io('http://circles-nerdycouple.rhcloud.com:8000');
                 UI.showStartMessage('connecting...');
 
                 socket.on('connect', function(){
@@ -244,9 +244,6 @@ var canvas = document.getElementById('canvas'),
                     Game.draw();
                 });
                 socket.on('disconnect', function(){
-                    Game.end();
-                });
-                socket.on('kick', function() {
                     Game.end();
                 });
             } catch (e) {
