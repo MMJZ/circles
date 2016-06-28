@@ -5,13 +5,11 @@ var canvas = document.getElementById('canvas'),
         white: '#fafafa',
         black: '#1a1a1a',
         radius: 20,
-        fillAll: function(fs, dontCentreOnPlayer) {
-            if (fs !== undefined) c.fillStyle = fs;
-            if (dontCentreOnPlayer)
-                c.clearRect(0, 0, canvas.width, canvas.height);
-            else {
-                c.clearRect(v.player.x - v.centre.x, v.player.y - v.centre.y, canvas.width, canvas.height);
-            }
+        clearA: function() {
+            c.clearRect(0, 0, canvas.width, canvas.height);
+        },
+        clearB: function() {
+            c.clearRect(v.view.left, v.view.top, canvas.width, canvas.height);
         },
         grid: function() {
             var xmod = v.view.left % v.gridSpacing,
@@ -129,7 +127,13 @@ var canvas = document.getElementById('canvas'),
                 p = v.players[i];
                 p.pos.x += p.vel.x * scale;
                 p.pos.y += p.vel.y * scale;
+                if (p.id === v.player.id) {
+                    v.player.x = p.pos.x;
+                    v.player.y = p.pos.y;
+                }
             }
+
+            Game.setView();
 
             v.lastupdatetime = now;
         },
@@ -138,9 +142,9 @@ var canvas = document.getElementById('canvas'),
             var gameLoop = function() {
                 v.loopID = window.requestAnimationFrame( gameLoop );
 
-                Game.physics();
-                Game.draw();
                 Server.update();
+                Game.draw();
+                Game.physics();
             };
 
             v.lastupdatetime = window.performance.now();
@@ -150,7 +154,7 @@ var canvas = document.getElementById('canvas'),
 
         end: function() {
             window.cancelAnimationFrame(v.loopID);
-            d.fillAll(d.white, true);
+            d.clearA();
             UI.showStartMenu();
             UI.showStartMessage('');
         },
@@ -161,7 +165,7 @@ var canvas = document.getElementById('canvas'),
             c.translate(-v.view.left, -v.view.top);
 
             // background
-            d.fillAll(d.white);
+            d.clearB();
             d.grid();
             c.textAlign = 'center';
 
@@ -169,10 +173,7 @@ var canvas = document.getElementById('canvas'),
             var p;
             for (var i = 0; i < v.players.length; i++) {
                 p = v.players[i];
-                if (p.id === v.player.id) {
-                    v.player.x = p.pos.x;
-                    v.player.y = p.pos.y;
-                } else {
+                if (p.id !== v.player.id) {
                     d.player(p.pos.x, p.pos.y, p.name, true, false);
                 }
             }
@@ -189,6 +190,13 @@ var canvas = document.getElementById('canvas'),
             return v.boundary.centre - v.time * v.boundary.speed - v.boundary.innerStart;
         },
 
+        setView: function() {
+            v.view.left   = v.player.x - v.centre.x;
+            v.view.top    = v.player.y - v.centre.y;
+            v.view.right  = v.player.x + v.centre.x;
+            v.view.bottom = v.player.y + v.centre.y;
+        },
+
         setViewAndPlayer: function() {
             var me = v.players.find(function(p) {
                 return p.id === v.player.id;
@@ -196,11 +204,7 @@ var canvas = document.getElementById('canvas'),
             if (me != undefined) {
                 v.player.x = me.pos.x;
                 v.player.y = me.pos.y;
-
-                v.view.left   = v.player.x - v.centre.x;
-                v.view.top    = v.player.y - v.centre.y;
-                v.view.right  = v.player.x + v.centre.x;
-                v.view.bottom = v.player.y + v.centre.y;
+                Game.setView();
             }
         },
     },
@@ -269,7 +273,7 @@ var canvas = document.getElementById('canvas'),
                 if (v.loopID) {
                     Game.draw();
                 } else {
-                    d.fillAll(d.white, true);
+                    d.clearA();
                 }
             };
             resize();
