@@ -97,14 +97,6 @@ var canvas = document.getElementById('canvas'),
         init: function() {
             this.bindUIActions();
             this.bindWindowResize();
-            this.checkRetina();
-        },
-
-        checkRetina: function() {
-            var s = window.devicePixelRatio || 1;
-            if (s !== 1) {
-                c.scale(s, s);
-            }
         },
 
         bindUIActions: function() {
@@ -122,12 +114,18 @@ var canvas = document.getElementById('canvas'),
         bindWindowResize: function() {
             var resize = function() {
                 var w = window.innerWidth,
-                    h = window.innerHeight;
-                canvas.width = w;
-                canvas.height = h;
+                    h = window.innerHeight,
+                    s = window.devicePixelRatio || 1;
+
+                canvas.width = w * s;
+                canvas.height = h * s;
+                canvas.style.width = w;
+                canvas.style.height = h;
                 v.centre.x = w/2;
                 v.centre.y = h/2;
-                Game.checkRetina();
+                c.scale(s, s);
+
+                // if game running
                 if (v.loopID) {
                     Game.draw();
                 } else {
