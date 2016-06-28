@@ -224,13 +224,15 @@ var canvas = document.getElementById('canvas'),
             var me = v.players.find(function(p) {
                 return p.id === v.player.id;
             });
-            v.player.x = me.pos.x;
-            v.player.y = me.pos.y;
+            if (me != undefined) {
+                v.player.x = me.pos.x;
+                v.player.y = me.pos.y;
 
-            v.view.left   = v.player.x - v.centre.x;
-            v.view.top    = v.player.y - v.centre.y;
-            v.view.right  = v.player.x + v.centre.x;
-            v.view.bottom = v.player.y + v.centre.y;
+                v.view.left   = v.player.x - v.centre.x;
+                v.view.top    = v.player.y - v.centre.y;
+                v.view.right  = v.player.x + v.centre.x;
+                v.view.bottom = v.player.y + v.centre.y;
+            }
         },
     },
     Server = {
