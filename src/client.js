@@ -97,6 +97,14 @@ var canvas = document.getElementById('canvas'),
         init: function() {
             this.bindUIActions();
             this.bindWindowResize();
+            this.checkRetina();
+        },
+
+        checkRetina: function() {
+            var s = window.devicePixelRatio || 1;
+            if (s !== 1) {
+                c.scale(s, s);
+            }
         },
 
         bindUIActions: function() {
@@ -119,6 +127,7 @@ var canvas = document.getElementById('canvas'),
                 canvas.height = h;
                 v.centre.x = w/2;
                 v.centre.y = h/2;
+                Game.checkRetina();
                 if (v.loopID) {
                     Game.draw();
                 } else {
