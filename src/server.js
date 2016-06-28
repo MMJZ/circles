@@ -24,7 +24,7 @@ var io = require('socket.io')(server);
 var tickLength = 20; // framerate = 1000/20 = 50fps.
 var playerRadius = 20;
 var playerMaxSpeed = 20;
-var playerAcceleration = 0.1;
+var playerAcceleration = 0.2;
 var outerBoundarySize = 6000;
 var gameLength = 1000 * 60;
 var maxLag = 6000;
@@ -54,6 +54,14 @@ function getOuterBoundaryPosition(){
     return time * boundarySpeed;
 }
 
+function getOuterBoundaryRadius(){
+    return centrePoint - time * boundarySpeed;
+}
+
+function getInnerBoundaryRadius(){
+    return centrePoint - time * boundarySpeed - innerBoundaryStart;
+}
+
 function getSecondsLeft(){
     return Math.ceil((1 - time / maxTime) * gameLength / 1000);
 }
@@ -72,7 +80,7 @@ function startTicking(){
 function stopTicking(){
     running = false;
     clearInterval(simulator);
-    console.log("info : sim : stop"); // for the trees mate
+    console.log("info : Trees saaaaaaaved"); // for the trees mate
 }
 
 function doGameTick(){
@@ -87,7 +95,6 @@ function doGameTick(){
         player = users[i];
         if(player.lastUpdate < getNow() - maxLag){
             sockets[player.id].emit('kick', 'lagging out');
-            console.log('lagging player ' + player.name + ' kicked');
             sockets[player.id].disconnect();
         }
         if(player.keys.left) player.vel.x -= playerAcceleration;
@@ -173,7 +180,7 @@ function endRound(){
             score: users[i].score
         });
     }
-    for(i = 0; i < users.length; i++) sockets[users[i].id].emit('leaderboard', leaderboard);
+    io.emit('leaderboard', leaderboard);
 }
 
 // Socketing
@@ -219,6 +226,7 @@ io.on('connection', function(socket) {
     });
 
     socket.on('disconnect', function () {
+        if(currentPlayer.id === null) return;
         var indexx = findIndex(users, currentPlayer.id);
         if (indexx > -1) users.splice(indexx, 1);
         console.log('info : ' + currentPlayer.name + ' disconnected');
@@ -297,3 +305,5 @@ function countLivingPlayersAndInc(){
     }
     return r;
 }
+
+console.log('asd');
