@@ -119,8 +119,8 @@ var canvas = document.getElementById('canvas'),
 
                 canvas.width = w * s;
                 canvas.height = h * s;
-                canvas.style.width = w;
-                canvas.style.height = h;
+                canvas.style.width = w + 'px';
+                canvas.style.height = h + 'px';
                 v.centre.x = w/2;
                 v.centre.y = h/2;
                 c.scale(s, s);
