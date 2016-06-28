@@ -120,6 +120,7 @@ var canvas = document.getElementById('canvas'),
         physics: function() {
             var p;
             for(var i = 0; i < v.players.length; i++) {
+                p = v.players[i];
                 p.pos.x += p.vel.x;
                 p.pos.y += p.vel.y;
             }
