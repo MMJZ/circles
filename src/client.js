@@ -235,7 +235,9 @@ var canvas = document.getElementById('canvas'),
     Server = {
         connectAndStart: function() {
             try {
-                socket = io('http://circles-nerdycouple.rhcloud.com:8000');
+                socket = io('http://circles-nerdycouple.rhcloud.com:8000', {
+                    reconnection: false,
+                });
                 UI.showStartMessage('connecting...');
 
                 socket.on('connect', function(){
