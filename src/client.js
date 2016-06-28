@@ -14,20 +14,20 @@ var canvas = document.getElementById('canvas'),
             }
         },
         grid: function() {
-            var xmod = v.view.left % v.gridsize.spacing,
-                ymod = v.view.top % v.gridsize.spacing;
+            var xmod = v.view.left % v.gridSpacing,
+                ymod = v.view.top % v.gridSpacing;
 
             c.strokeStyle = '#aaa';
             c.lineWidth = 1;
             var i;
-            for (i = v.view.left - xmod; i <= v.view.right; i+= v.gridsize.spacing) {
+            for (i = v.view.left - xmod; i <= v.view.right; i+= v.gridSpacing) {
                 c.beginPath();
                 c.moveTo(i, v.view.top);
                 c.lineTo(i, v.view.bottom);
                 c.closePath();
                 c.stroke();
             }
-            for (i = v.view.top - ymod; i <= v.view.bottom; i+= v.gridsize.spacing) {
+            for (i = v.view.top - ymod; i <= v.view.bottom; i+= v.gridSpacing) {
                 c.beginPath();
                 c.moveTo(v.view.left, i);
                 c.lineTo(v.view.right, i);
@@ -86,10 +86,15 @@ var canvas = document.getElementById('canvas'),
         },
         players: [],
         time: null,
-        gridsize: {
-            x: 6000,
-            y: 6000,
-            spacing: 150,
+        gridSpacing: 150,
+        gameLength: 1000 * 60,
+        tickLength: 20,
+        maxTime: this.gameLength / this.tickLength,
+        boundary: {
+            outerSize: 6000,
+            innerStart: this.outerSize / 4,
+            centre: this.outerSize / 2,
+            speed: this.outerSize / (4 * this.maxTime),
         },
     },
     socket,
@@ -195,14 +200,14 @@ var canvas = document.getElementById('canvas'),
         },
 
         draw: function() {
+            // reset and translate
+            c.setTransform(1, 0, 0, 1, 0, 0);
+            c.translate(-v.view.left, -v.view.top);
+
             // background
             d.fillAll(d.white);
             d.grid();
             c.textAlign = 'center';
-
-            // reset and translate
-            c.setTransform(1, 0, 0, 1, 0, 0);
-            c.translate(-v.view.left, -v.view.top);
 
             // draw all players
             var p;
@@ -218,6 +223,14 @@ var canvas = document.getElementById('canvas'),
 
             // draw me last
             d.player(v.player.x, v.player.y, v.player.name, true, true);
+        },
+
+        getOuterBoundaryRadius: function (){
+            return v.boundary.centre - v.time * v.boundary.speed;
+        },
+
+        getInnerBoundaryRadius: function (){
+            return v.boundary.centre - v.time * v.boundary.speed - v.boundary.innerStart;
         },
 
         setViewAndPlayer: function() {
