@@ -5,13 +5,11 @@ var canvas = document.getElementById('canvas'),
         white: '#fafafa',
         black: '#1a1a1a',
         radius: 20,
-        fillAll: function(fs, dontCentreOnPlayer) {
-            if (fs !== undefined) c.fillStyle = fs;
-            if (dontCentreOnPlayer)
-                c.clearRect(0, 0, canvas.width, canvas.height);
-            else {
-                c.clearRect(v.player.x - v.centre.x, v.player.y - v.centre.y, canvas.width, canvas.height);
-            }
+        clearA: function() {
+            c.clearRect(0, 0, canvas.width, canvas.height);
+        },
+        clearB: function() {
+            c.clearRect(v.view.left, v.view.top, canvas.width, canvas.height);
         },
         grid: function() {
             var xmod = v.view.left % v.gridSpacing,
@@ -35,6 +33,10 @@ var canvas = document.getElementById('canvas'),
                 c.stroke();
             }
         },
+        boundary: function() {
+            var colour = v.whiteInner ? d.white : d.black;
+            d.circle(v.boundary.centre, v.boundary.centre, d.getInnerBoundaryRadius(), colour);
+        },
         circle: function(x, y, r, fs) {
             if (fs !== undefined) c.fillStyle = fs;
             c.beginPath();
@@ -42,21 +44,18 @@ var canvas = document.getElementById('canvas'),
             c.closePath();
             c.fill();
         },
-        // centre circle
-        ccircle: function(r, fs) {
-            this.circle(canvas.width/2, canvas.height/2, r, fs);
-        },
         player: function(x, y, name, dark, you) {
-            var colour = dark ? d.black : d.white;
+            var colour = you ? '#5599BB' : dark ? d.black : d.white;
             c.font = '16pt Montserrat Alternates';
 
-            if (you) {
-                d.circle(x, y, d.radius, '#5599BB');
-                c.fillText(name, x, y - 32);
-            } else {
-                d.circle(x, y, d.radius, colour);
-                c.fillText(name, x, y - 32);
-            }
+            d.circle(x, y, d.radius, colour);
+            c.fillText(name, x, y - 32);
+        },
+        getOuterBoundaryRadius: function (){
+            return v.boundary.centre - v.time * v.boundary.speed;
+        },
+        getInnerBoundaryRadius: function (){
+            return v.boundary.centre - v.time * v.boundary.speed - v.boundary.innerStart;
         },
     },
     // vars
@@ -90,17 +89,21 @@ var canvas = document.getElementById('canvas'),
         gridSpacing: 150,
         gameLength: 1000 * 60,
         tickLength: 20,
-        maxTime: this.gameLength / this.tickLength,
         boundary: {
             outerSize: 6000,
-            innerStart: this.outerSize / 4,
-            centre: this.outerSize / 2,
-            speed: this.outerSize / (4 * this.maxTime),
         },
+        deriveVars: function() {
+            this.maxTime = this.gameLength / this.tickLength;
+            this.boundary.innerStart = this.boundary.outerSize / 4;
+            this.boundary.centre = this.boundary.outerSize / 2;
+            this.boundary.speed = this.boundary.outerSize / (4 * this.maxTime);
+        },
+        whiteInner: false,
     },
     socket,
     Game = {
         init: function() {
+            v.deriveVars();
             UI.bindUIActions();
             UI.bindWindowResize();
         },
@@ -129,7 +132,13 @@ var canvas = document.getElementById('canvas'),
                 p = v.players[i];
                 p.pos.x += p.vel.x * scale;
                 p.pos.y += p.vel.y * scale;
+                if (p.id === v.player.id) {
+                    v.player.x = p.pos.x;
+                    v.player.y = p.pos.y;
+                }
             }
+
+            Game.setView();
 
             v.lastupdatetime = now;
         },
@@ -138,9 +147,9 @@ var canvas = document.getElementById('canvas'),
             var gameLoop = function() {
                 v.loopID = window.requestAnimationFrame( gameLoop );
 
-                Game.physics();
-                Game.draw();
                 Server.update();
+                Game.draw();
+                Game.physics();
             };
 
             v.lastupdatetime = window.performance.now();
@@ -150,7 +159,7 @@ var canvas = document.getElementById('canvas'),
 
         end: function() {
             window.cancelAnimationFrame(v.loopID);
-            d.fillAll(d.white, true);
+            d.clearA();
             UI.showStartMenu();
             UI.showStartMessage('');
         },
@@ -161,19 +170,19 @@ var canvas = document.getElementById('canvas'),
             c.translate(-v.view.left, -v.view.top);
 
             // background
-            d.fillAll(d.white);
+            d.clearB();
+            d.boundary();
             d.grid();
             c.textAlign = 'center';
 
             // draw all players
-            var p;
+            var p, dark;
             for (var i = 0; i < v.players.length; i++) {
                 p = v.players[i];
-                if (p.id === v.player.id) {
-                    v.player.x = p.pos.x;
-                    v.player.y = p.pos.y;
-                } else {
-                    d.player(p.pos.x, p.pos.y, p.name, true, false);
+                if (p.id !== v.player.id) {
+                    dark = (v.whiteInner === p.inner) ? true : false;
+                    d.player(p.pos.x, p.pos.y, p.name, dark, false);
+                    console.log(p.inner === v.whiteInner);
                 }
             }
 
@@ -181,12 +190,11 @@ var canvas = document.getElementById('canvas'),
             d.player(v.player.x, v.player.y, v.player.name, true, true);
         },
 
-        getOuterBoundaryRadius: function (){
-            return v.boundary.centre - v.time * v.boundary.speed;
-        },
-
-        getInnerBoundaryRadius: function (){
-            return v.boundary.centre - v.time * v.boundary.speed - v.boundary.innerStart;
+        setView: function() {
+            v.view.left   = v.player.x - v.centre.x;
+            v.view.top    = v.player.y - v.centre.y;
+            v.view.right  = v.player.x + v.centre.x;
+            v.view.bottom = v.player.y + v.centre.y;
         },
 
         setViewAndPlayer: function() {
@@ -196,11 +204,7 @@ var canvas = document.getElementById('canvas'),
             if (me != undefined) {
                 v.player.x = me.pos.x;
                 v.player.y = me.pos.y;
-
-                v.view.left   = v.player.x - v.centre.x;
-                v.view.top    = v.player.y - v.centre.y;
-                v.view.right  = v.player.x + v.centre.x;
-                v.view.bottom = v.player.y + v.centre.y;
+                Game.setView();
             }
         },
     },
@@ -269,7 +273,7 @@ var canvas = document.getElementById('canvas'),
                 if (v.loopID) {
                     Game.draw();
                 } else {
-                    d.fillAll(d.white, true);
+                    d.clearA();
                 }
             };
             resize();

@@ -13,7 +13,15 @@ canvas {
     z-index: -1;
 }
 
+#startHolder {
+    text-align: center;
+    position: absolute;
+    width: 100%;
+}
+
 #startMenu {
+    display: inline-block;
+    text-align: left;
     width: 400px;
     height: 130px;
     border-radius: 10px;
