@@ -100,72 +100,8 @@ var canvas = document.getElementById('canvas'),
     socket,
     Game = {
         init: function() {
-            this.bindUIActions();
-            this.bindWindowResize();
-        },
-
-        bindUIActions: function() {
-            var playButton = document.getElementById('playButton');
-            playButton.addEventListener('click', Game.begin);
-            var input = document.getElementById('nameInput');
-            input.addEventListener('keypress', function(e) {
-                // enter key
-                if (e.keyCode === 13) {
-                    Game.begin();
-                }
-            });
-        },
-
-        bindWindowResize: function() {
-            var resize = function() {
-                var w = window.innerWidth,
-                    h = window.innerHeight,
-                    s = window.devicePixelRatio || 1;
-
-                canvas.width = w * s;
-                canvas.height = h * s;
-                canvas.style.width = w + 'px';
-                canvas.style.height = h + 'px';
-                v.centre.x = w/2;
-                v.centre.y = h/2;
-                c.scale(s, s);
-
-                // if game running
-                if (v.loopID) {
-                    Game.draw();
-                } else {
-                    d.fillAll(d.white, true);
-                }
-            };
-            resize();
-            window.addEventListener('resize', resize);
-        },
-
-        keyActions: {
-            bind: function() {
-                window.addEventListener('keydown', this.keydownHandler);
-                window.addEventListener('keyup', this.keyupHandler);
-            },
-            unbind: function() {
-                window.removeEventListener('keydown', this.keydownHandler);
-                window.removeEventListener('keyup', this.keyupHandler);
-            },
-            keydownHandler: function(e) {
-                switch (e.keyCode) {
-                    case 37: v.keys.left  = true; break;
-                    case 38: v.keys.up    = true; break;
-                    case 39: v.keys.right = true; break;
-                    case 40: v.keys.down  = true; break;
-                }
-            },
-            keyupHandler: function(e) {
-                switch (e.keyCode) {
-                    case 37: v.keys.left  = false; break;
-                    case 38: v.keys.up    = false; break;
-                    case 39: v.keys.right = false; break;
-                    case 40: v.keys.down  = false; break;
-                }
-            },
+            UI.bindUIActions();
+            UI.bindWindowResize();
         },
 
         begin: function() {
@@ -173,7 +109,7 @@ var canvas = document.getElementById('canvas'),
             var regex = /^\w*$/;
             var nick = document.getElementById('nameInput').value;
             if (regex.test(nick)) {
-                Game.keyActions.bind();
+                UI.keyActions.bind();
                 v.player.name = nick;
                 Server.connectAndStart();
             } else {
@@ -287,11 +223,76 @@ var canvas = document.getElementById('canvas'),
                 else UI.showStartMessage('I have no idea what went wrong ¯\\_(ツ)_/¯');
             }
         },
+
         update: function() {
             socket.emit('update', v.keys);
         },
     },
     UI = {
+        bindUIActions: function() {
+            var playButton = document.getElementById('playButton');
+            playButton.addEventListener('click', Game.begin);
+            var input = document.getElementById('nameInput');
+            input.addEventListener('keypress', function(e) {
+                // enter key
+                if (e.keyCode === 13) {
+                    Game.begin();
+                }
+            });
+        },
+
+        bindWindowResize: function() {
+            var resize = function() {
+                var w = window.innerWidth,
+                    h = window.innerHeight,
+                    s = window.devicePixelRatio || 1;
+
+                canvas.width = w * s;
+                canvas.height = h * s;
+                canvas.style.width = w + 'px';
+                canvas.style.height = h + 'px';
+                v.centre.x = w/2;
+                v.centre.y = h/2;
+                c.scale(s, s);
+
+                // if game running
+                if (v.loopID) {
+                    Game.draw();
+                } else {
+                    d.fillAll(d.white, true);
+                }
+            };
+            resize();
+            window.addEventListener('resize', resize);
+        },
+
+        keyActions: {
+            bind: function() {
+                window.addEventListener('keydown', this.keydownHandler);
+                window.addEventListener('keyup', this.keyupHandler);
+            },
+            unbind: function() {
+                window.removeEventListener('keydown', this.keydownHandler);
+                window.removeEventListener('keyup', this.keyupHandler);
+            },
+            keydownHandler: function(e) {
+                switch (e.keyCode) {
+                    case 37: v.keys.left  = true; break;
+                    case 38: v.keys.up    = true; break;
+                    case 39: v.keys.right = true; break;
+                    case 40: v.keys.down  = true; break;
+                }
+            },
+            keyupHandler: function(e) {
+                switch (e.keyCode) {
+                    case 37: v.keys.left  = false; break;
+                    case 38: v.keys.up    = false; break;
+                    case 39: v.keys.right = false; break;
+                    case 40: v.keys.down  = false; break;
+                }
+            },
+        },
+
         showStartMenu: function() {
             var a = document.getElementById('startMenu');
             a.addEventListener('animationend', function() {
@@ -300,6 +301,7 @@ var canvas = document.getElementById('canvas'),
             a.className = '';
             window.focus();
         },
+
         hideStartMenu: function() {
             var a = document.getElementById('startMenu');
             a.addEventListener('animationend', function() {
@@ -308,6 +310,7 @@ var canvas = document.getElementById('canvas'),
             a.className = 'animateHide';
             window.focus();
         },
+
         showStartMessage: function(msg) {
             var m = document.getElementById('message');
             m.innerHTML = msg;
