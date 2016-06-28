@@ -13,9 +13,30 @@ var canvas = document.getElementById('canvas'),
                 c.clearRect(v.player.x - v.centre.x, v.player.y - v.centre.y, canvas.width, canvas.height);
             }
         },
+        grid: function() {
+            var xstart = v.player.x < v.centre.x ? 0 : v.view.left - (v.view.left % v.gridsize.spacing),
+                xend = (v.gridsize.x - v.player.x) < v.centre.x ? v.gridsize.x : v.view.right,
+                ystart = v.player.y < v.centre.y ? 0 : v.view.top - (v.view.top % v.gridsize.spacing),
+                yend = (v.gridsize.y - v.player.y) < v.centre.y ? v.gridsize.y : v.player.y + v.centre.y;
+
+            c.strokeStyle = '#aaa';
+            c.lineWidth = 1;
+            var i;
+            for (i = xstart; i <= xend; i+= v.gridsize.spacing) {
+                c.beginPath();
+                c.moveTo(i, ystart);
+                c.lineTo(i, yend);
+                c.stroke();
+            }
+            for (i = ystart; i <= yend; i+= v.gridsize.spacing) {
+                c.beginPath();
+                c.moveTo(xstart, i);
+                c.lineTo(xend, i);
+                c.stroke();
+            }
         },
         circle: function(x, y, r, fs) {
-            if (fs != undefined) c.fillStyle = fs;
+            if (fs !== undefined) c.fillStyle = fs;
             c.beginPath();
             c.arc(x, y, r, 0, Math.PI*2, true);
             c.closePath();
@@ -27,16 +48,15 @@ var canvas = document.getElementById('canvas'),
         },
         player: function(x, y, name, dark, you) {
             var colour = dark ? d.black : d.white;
+            c.font = '12pt Montserrat Alternates';
+
             if (you) {
                 d.circle(x, y, d.radius, '#5599BB');
-                c.fillStyle = '#5599BB';
+                c.fillText(name, x, y - 15);
             } else {
                 d.circle(x, y, d.radius, colour);
-                // ^ this set the fillstyle so i don't have to
+                c.fillText(name, x, y - 15);
             }
-
-            c.font = '12pt Montserrat Alternates';
-            c.fillText(name, x, y - 15);
         },
     },
     // vars
@@ -48,13 +68,28 @@ var canvas = document.getElementById('canvas'),
             down: false,
         },
         loopID: null,
+        centre: {
+            x: 0,
+            y: 0,
+        },
+        view: {
+            left: 0,
+            right: 0,
+            top: 0,
+            bottom: 0,
+        },
         player: {
             name: null,
             id: null,
-            x: -100,
-            y: -100,
+            x: 0,
+            y: 0,
         },
         players: [],
+        gridsize: {
+            x: 6000,
+            y: 6000,
+            spacing: 60,
+        },
     },
     socket,
     Game = {
@@ -77,9 +112,17 @@ var canvas = document.getElementById('canvas'),
 
         bindWindowResize: function() {
             var resize = function() {
-                canvas.height = window.innerHeight;
-                canvas.width = window.innerWidth;
-                Game.draw();
+                var w = window.innerWidth,
+                    h = window.innerHeight;
+                canvas.width = w;
+                canvas.height = h;
+                v.centre.x = w/2;
+                v.centre.y = h/2;
+                if (v.loopID) {
+                    Game.draw();
+                } else {
+                    d.fillAll(d.white, true);
+                }
             };
             resize();
             window.addEventListener('resize', resize);
@@ -141,8 +184,13 @@ var canvas = document.getElementById('canvas'),
         },
 
         draw: function() {
+            // reset and translate
+            c.setTransform(1, 0, 0, 1, 0, 0);
+            c.translate(-v.view.left, -v.view.top);
+
             // background
             d.fillAll(d.white);
+            d.grid();
             c.textAlign = 'center';
 
             // draw all players
