@@ -88,6 +88,7 @@ var canvas = document.getElementById('canvas'),
             y: 0,
         },
         players: [],
+        leaderboard: [],
         time: null,
         lastupdatetime: null,
         gridSpacing: 150,
@@ -166,6 +167,8 @@ var canvas = document.getElementById('canvas'),
             d.clearA();
             UI.showStartMenu();
             UI.showStartMessage('');
+            v.whiteInner = true;
+            document.body.style.backgroundColor = d.white;
         },
 
         draw: function() {
@@ -192,6 +195,12 @@ var canvas = document.getElementById('canvas'),
 
             // draw me last
             d.player(v.player.x, v.player.y, v.player.name, true, true);
+        },
+
+        swapColours: function() {
+            v.whiteInner = !v.whiteInner;
+            var colour = v.whiteInner ? d.white : d.black;
+            document.body.style.backgroundColor = colour;
         },
 
         setView: function() {
@@ -232,6 +241,11 @@ var canvas = document.getElementById('canvas'),
                     v.players = players;
                     Game.setViewAndPlayer();
                     v.time = time;
+                });
+                socket.on('endRound', function(leaderboard) {
+                    // TODO leaderboard stuff
+                    v.leaderboard = leaderboard;
+                    Game.swapColours();
                 });
                 socket.on('disconnect', function(){
                     Game.end();
