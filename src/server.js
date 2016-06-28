@@ -24,7 +24,7 @@ var io = require('socket.io')(server);
 var tickLength = 20; // framerate = 1000/20 = 50fps.
 var playerRadius = 20;
 var playerMaxSpeed = 20;
-var playerAcceleration = 2;
+var playerAcceleration = 0.1;
 var outerBoundarySize = 6000;
 var gameLength = 1000 * 60;
 var maxLag = 6000;
@@ -87,6 +87,7 @@ function doGameTick(){
         player = users[i];
         if(player.lastUpdate < getNow() - maxLag){
             sockets[player.id].emit('kick', 'lagging out');
+            console.log('lagging player ' + player.name + ' kicked');
             sockets[player.id].disconnect();
         }
         if(player.keys.left) player.vel.x -= playerAcceleration;
