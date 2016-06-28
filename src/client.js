@@ -164,6 +164,7 @@ var canvas = document.getElementById('canvas'),
 
         end: function() {
             window.cancelAnimationFrame(v.loopID);
+            c.setTransform(1, 0, 0, 1, 0, 0);
             d.clearA();
             UI.showStartMenu();
             UI.showStartMessage('');
