@@ -131,7 +131,20 @@ function doGameTick(){
     for(i = 0; i < users.length - 1; i++) for(var j = i + 1; j < users.length; j++) 
         if(isTouching(users[i], users[j])) bashCircles(users[i], users[j]);
     
+    var outInf = [];
     
+    for(i = 0; i < users.length; i++){
+        var playerOutInf = users[i].id;
+        outInf.push({
+            pos: playerOutInf.pos,
+            vel: playerOutInf.vel,
+            name: playerOutInf.name,
+            id: playerOutInf.id,
+            inner: playerOutInf.inner
+        });
+    }
+    
+    for(i = 0; i < users.length; i++) sockets[users[i].id].emit('update', outInf, time);
 }
 
 function endRound(){
@@ -141,6 +154,8 @@ function endRound(){
         if(users[i].inner) users[i].score += users.length - 1;
         else users.inner = true;
     }
+    users.sort(function(a, b) { return b.score - a.score; });
+    
 }
 
 // Socketing
