@@ -165,7 +165,6 @@ function doGameTick(){
 
 function endRound(){
     time = 0;
-    io.sockets.emit('roundEnd');
     for(var i = 0; i < users.length; i++){
         if(users[i].inner) users[i].score += users.length - 1;
         else users.inner = true;
@@ -178,7 +177,7 @@ function endRound(){
             score: users[i].score
         });
     }
-    io.emit('leaderboard', leaderboard);
+    io.emit('endRound', leaderboard);
 }
 
 // Socketing
