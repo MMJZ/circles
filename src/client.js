@@ -185,6 +185,7 @@ var canvas = document.getElementById('canvas'),
             var gameLoop = function() {
                 v.loopID = window.requestAnimationFrame( gameLoop );
 
+                Game.draw();
                 Server.update();
             };
 
@@ -268,7 +269,6 @@ var canvas = document.getElementById('canvas'),
                     v.players = players;
                     Game.setViewAndPlayer();
                     v.time = time;
-                    Game.draw();
                 });
                 socket.on('disconnect', function(){
                     Game.end();
