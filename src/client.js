@@ -5,9 +5,14 @@ var canvas = document.getElementById('canvas'),
         white: '#fafafa',
         black: '#1a1a1a',
         radius: 8,
-        fillAll: function(fs) {
-            if (fs != undefined) c.fillStyle = fs;
-            c.fillRect(0, 0, canvas.width, canvas.height);
+        fillAll: function(fs, dontCentreOnPlayer) {
+            if (fs !== undefined) c.fillStyle = fs;
+            if (dontCentreOnPlayer)
+                c.clearRect(0, 0, canvas.width, canvas.height);
+            else {
+                c.clearRect(v.player.x - v.centre.x, v.player.y - v.centre.y, canvas.width, canvas.height);
+            }
+        },
         },
         circle: function(x, y, r, fs) {
             if (fs != undefined) c.fillStyle = fs;
