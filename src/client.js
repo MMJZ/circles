@@ -34,9 +34,8 @@ var canvas = document.getElementById('canvas'),
             }
         },
         boundary: function() {
-            var c = v.whiteInner ? d.white : d.black;
-            d.circle(v.boundary.centre, v.boundary.centre, d.getInnerBoundaryRadius(), c);
-            // d.circle(3000,3000,3000,d.black);
+            var colour = v.whiteInner ? d.white : d.black;
+            d.circle(v.boundary.centre, v.boundary.centre, d.getInnerBoundaryRadius(), colour);
         },
         circle: function(x, y, r, fs) {
             if (fs !== undefined) c.fillStyle = fs;
@@ -50,16 +49,11 @@ var canvas = document.getElementById('canvas'),
             this.circle(canvas.width/2, canvas.height/2, r, fs);
         },
         player: function(x, y, name, dark, you) {
-            var colour = dark ? d.black : d.white;
+            var colour = you ? '#5599BB' : dark ? d.black : d.white;
             c.font = '16pt Montserrat Alternates';
 
-            if (you) {
-                d.circle(x, y, d.radius, '#5599BB');
-                c.fillText(name, x, y - 32);
-            } else {
-                d.circle(x, y, d.radius, colour);
-                c.fillText(name, x, y - 32);
-            }
+            d.circle(x, y, d.radius, colour);
+            c.fillText(name, x, y - 32);
         },
         getOuterBoundaryRadius: function (){
             return v.boundary.centre - v.time * v.boundary.speed;
@@ -186,11 +180,13 @@ var canvas = document.getElementById('canvas'),
             c.textAlign = 'center';
 
             // draw all players
-            var p;
+            var p, dark;
             for (var i = 0; i < v.players.length; i++) {
                 p = v.players[i];
                 if (p.id !== v.player.id) {
-                    d.player(p.pos.x, p.pos.y, p.name, true, false);
+                    dark = (v.whiteInner === p.inner) ? true : false;
+                    d.player(p.pos.x, p.pos.y, p.name, dark, false);
+                    console.log(p.inner === v.whiteInner);
                 }
             }
 
