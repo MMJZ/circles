@@ -181,10 +181,19 @@ var canvas = document.getElementById('canvas'),
             }
         },
 
+        physics: function() {
+            var p;
+            for(var i = 0; i < v.players.length; i++) {
+                p.pos.x += p.vel.x;
+                p.pos.y += p.vel.y;
+            }
+        },
+
         startForRealz: function() {
             var gameLoop = function() {
                 v.loopID = window.requestAnimationFrame( gameLoop );
 
+                Game.physics();
                 Game.draw();
                 Server.update();
             };
