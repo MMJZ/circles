@@ -142,7 +142,7 @@ h1 {
     border: 1px solid rgba(26,26,26, 0.3);
     color: rgba(26,26,26, 0.8);
     padding: 1em;
-    transition: 0.3s all;
+    transition: 1.5s all;
 }
 
 #leaderboard.hidden {
