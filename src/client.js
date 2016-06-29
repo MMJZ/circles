@@ -60,6 +60,12 @@ var canvas = document.getElementById('canvas'),
             var colour = you ? '#5599BB' : dark ? d.black : d.white;
             c.font = 'bold 20pt Source Sans Pro';
 
+            if (!you) {
+                c.strokeStyle = dark ? d.white : d.black;
+                c.lineWidth = 3;
+                c.strokeText(name, x, y - 32);
+            }
+
             d.circle(x, y, d.radius, colour);
             c.fillText(name, x, y - 32);
         },
