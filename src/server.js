@@ -27,7 +27,7 @@ var playerMaxSpeed = 20;
 var playerAcceleration = 0.2;
 var outerBoundarySize = 10000;
 var gameLength = 1000 * 60;
-var maxLag = 6000;
+var maxLag = 10000;
 
 // Deduced static variables
 
@@ -93,10 +93,6 @@ function doGameTick(){
 
     for(var i = 0; i < users.length; i++){
         player = users[i];
-        if(player.lastUpdate < getNow() - maxLag){
-            sockets[player.id].emit('kick', 'you\'re lagging 😭 ');
-            sockets[player.id].disconnect();
-        }
         if(player.keys.left) player.vel.x -= playerAcceleration;
         if(player.keys.up) player.vel.y -= playerAcceleration;
         if(player.keys.down) player.vel.y += playerAcceleration;
@@ -179,6 +175,7 @@ function endRound(){
         });
     }
     io.emit('endRound', leaderboard);
+    io.emit('ping', getNow());
 }
 
 // Socketing
@@ -231,7 +228,12 @@ io.on('connection', function(socket) {
         if(users.length === 0) stopTicking();
     });
 
-    socket.on('ping', function () {socket.emit('pong');});
+    socket.on('pong', function (retTime) {
+        if(retTime < getNow() - maxLag){
+            sockets[currentPlayer.id].emit('kick', 'you\'re lagging 😭 ');
+            sockets[currentPlayer.id].disconnect();
+        }
+    });
 
     socket.on('update', function(keys) {
         currentPlayer.lastUpdate = getNow();
