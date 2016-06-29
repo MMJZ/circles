@@ -7,10 +7,10 @@ var app = express();
 var http = require('http');
 
 app.set('port', process.env.OPENSHIFT_NODEJS_PORT || process.env.PORT || 3002);
-app.set('ip', process.env.OPENSHIFT_NODEJS_IP || "127.0.0.1");
+app.set('ip', process.env.OPENSHIFT_NODEJS_IP || '127.0.0.1');
 
 var server = http.createServer(app).listen(app.get('port') ,app.get('ip'), function () {
-    console.log("✔ Express server listening at %s:%d ", app.get('ip'),app.get('port'));
+    console.log('✔ Express server listening at %s:%d ', app.get('ip'),app.get('port'));
 });
 
 app.get('/', function (req, res) {
@@ -71,7 +71,7 @@ function getSecondsLeft(){
 function startTicking(){
     running = true;
     time = 0;
-    console.log("info : Starting Tick");
+    console.log('info : Starting Tick');
     simulator = setInterval(function(){
         doGameTick();
     }, tickLength);
@@ -80,17 +80,17 @@ function startTicking(){
 function stopTicking(){
     running = false;
     clearInterval(simulator);
-    console.log("info : Trees saaaaaaaved"); // for the trees mate
+    console.log('info : Trees saaaaaaaved'); // for the trees mate
 }
 
 function doGameTick(){
-    
+
     time += 1;
     if(time === maxTime) endRound();
     var player;
-    
+
     // Movement
-    
+
     for(var i = 0; i < users.length; i++){
         player = users[i];
         if(player.lastUpdate < getNow() - maxLag){
@@ -108,12 +108,12 @@ function doGameTick(){
         player.pos.x += player.vel.x;
         player.pos.y += player.vel.y;
     }
-    
+
     // Collisions
-    
+
     var outP = getOuterBoundaryPosition();
     var inP = getInnerBoundaryPosition();
-    
+
     for(i = 0; i < users.length; i++){
         player = users[i];
         var dx = centrePoint - player.pos.x;
@@ -138,17 +138,17 @@ function doGameTick(){
                 var tangentSpeed = tangentX * player.vel.x + tangentY * player.vel.y;
                 player.vel = {
                     x: normalSpeed * normalX * 2 + tangentSpeed * tangentX * 2,
-                    y: normalSpeed * normalY * 2 + tangentSpeed * tangentY * 2
+                    y: normalSpeed * normalY * 2 + tangentSpeed * tangentY * 2,
                 };
             }else if(dx2 + dy2 < sq(centrePoint - inP + playerRadius)){
                 bashCircles(player, {pos:{x:centrePoint,y:centrePoint},vel:{x:0,y:0}});
             }
         }
     }
-    
-    for(i = 0; i < users.length - 1; i++) for(var j = i + 1; j < users.length; j++) 
+
+    for(i = 0; i < users.length - 1; i++) for(var j = i + 1; j < users.length; j++)
         if(isTouching(users[i], users[j])) bashCircles(users[i], users[j]);
-    
+
     var outInf = [];
     for(i = 0; i < users.length; i++){
         var playerOutInf = users[i];
@@ -157,7 +157,7 @@ function doGameTick(){
             vel: playerOutInf.vel,
             name: playerOutInf.name,
             id: playerOutInf.id,
-            inner: playerOutInf.inner
+            inner: playerOutInf.inner,
         });
     }
     io.emit('update', outInf, time);
@@ -199,24 +199,24 @@ io.on('connection', function(socket) {
             sockets[socket.id] = socket;
             socket.emit('ready');
             if(!running) startTicking();
-            
+
             currentPlayer = {
                 id: socket.id,
                 pos: getFreePosition(),
                 vel: {
                     x: 0,
-                    y: 0
+                    y: 0,
                 },
                 name: pplayer.name,
                 keys: {
                     left: false,
                     up: false,
                     right: false,
-                    down: false
+                    down: false,
                 },
                 inner: false,
                 score: 0,
-                lastUpdate: getNow()
+                lastUpdate: getNow(),
             };
             users.push(currentPlayer);
             console.log('info : ' + users.length + ' players connected');
@@ -230,9 +230,9 @@ io.on('connection', function(socket) {
         console.log('info : ' + currentPlayer.name + ' disconnected');
         if(users.length === 0) stopTicking();
     });
-    
+
     socket.on('ping', function () {socket.emit('pong');});
-    
+
     socket.on('update', function(keys) {
         currentPlayer.lastUpdate = getNow();
         currentPlayer.keys = keys;
@@ -255,7 +255,7 @@ function getFreePosition(){
         var x1 = tx - recr, y1 = ty - recr, x2 = tx + recr, y2 = ty + recr;
         for(var i = 0; i < users.length; i++){
             var theirpos = users[i].pos;
-            if(theirpos.x >= x1 && theirpos.x <= x2 && theirpos.y >= y1 && theirpos.y <= y2) 
+            if(theirpos.x >= x1 && theirpos.x <= x2 && theirpos.y >= y1 && theirpos.y <= y2)
                 continue findloop;
         }
         return {x: tx, y: ty};

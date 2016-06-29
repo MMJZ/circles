@@ -1,0 +1,28 @@
+env:
+  browser: true
+  node: true
+extends: 'eslint:recommended'
+globals:
+  "io": true
+rules:
+  indent:
+    - error
+    - 4
+    - SwitchCase : 1
+  linebreak-style:
+    - error
+    - unix
+  quotes:
+    - warn
+    - single
+  semi:
+    - error
+    - always
+  no-console: off
+  comma-dangle:
+    - error
+    - always-multiline
+  eqeqeq:
+    - warn
+    - smart
+  no-trailing-spaces: error
