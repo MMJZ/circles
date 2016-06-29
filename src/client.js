@@ -133,7 +133,7 @@ var canvas = document.getElementById('canvas'),
             var regex = /^\w*$/;
             var nick = document.getElementById('nameInput').value;
             if (regex.test(nick)) {
-                v.player.name = nick;
+                v.player.name = nick || 'anonymouse 🐭 ';
                 Server.connectAndStart();
             } else {
                 UI.showStartMessage('nickname must be alphanumeric');
