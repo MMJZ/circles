@@ -1,15 +1,20 @@
 var canvas = document.getElementById('canvas'),
     c = canvas.getContext('2d'),
-    // drawing stuff
+    socket,
     d = {
+        // drawing code
+        // variables
         white: '#fafafa',
         black: '#1a1a1a',
         radius: 20,
+        // functions
         clearA: function() {
+            // resets canvas and clears
             c.setTransform(1, 0, 0, 1, 0, 0);
             c.clearRect(0, 0, canvas.width, canvas.height);
         },
         clearB: function() {
+            // clears around the player
             c.clearRect(v.view.left, v.view.top, canvas.width, canvas.height);
         },
         grid: function() {
@@ -18,6 +23,7 @@ var canvas = document.getElementById('canvas'),
 
             c.strokeStyle = '#aaa';
             c.lineWidth = 1;
+
             var i;
             for (i = v.view.left - xmod; i <= v.view.right; i+= v.gridSpacing) {
                 c.beginPath();
@@ -35,7 +41,7 @@ var canvas = document.getElementById('canvas'),
             }
         },
         boundary: function() {
-            // draws the second area (not the innermost)
+            // draws the second area (not the innermost), kind of like a doughnut
             c.fillStyle = v.whiteInner ? d.black : d.white;
             c.beginPath();
             c.arc(v.boundary.centre, v.boundary.centre, d.getOuterBoundaryRadius(), 0, 2*Math.PI);
@@ -63,71 +69,69 @@ var canvas = document.getElementById('canvas'),
             return v.boundary.centre - v.time * v.boundary.speed - v.boundary.innerStart;
         },
     },
-    // vars
     v = {
-        keys: {
-            left: false,
-            right: false,
-            up: false,
-            down: false,
-        },
-        loopID: null,
-        centre: {
-            x: 0,
-            y: 0,
-        },
-        view: {
-            left: 0,
-            right: 0,
-            top: 0,
-            bottom: 0,
-        },
-        player: {
-            name: null,
-            id: null,
-            x: 0,
-            y: 0,
-        },
-        players: [],
-        leaderboard: [],
-        endMessage: '',
-        time: null,
-        lastupdatetime: null,
+        // global variables
+        // hardcoded
         gridSpacing: 150,
         gameLength: 1000 * 60,
         tickLength: 20,
         boundary: {
             outerSize: 10000,
         },
-        whiteInner: true,
         resetVars: function() {
+            // defaults
+            this.keys =  {
+                left: false,
+                right: false,
+                up: false,
+                down: false,
+            };
+            this.centre = {
+                x: 0,
+                y: 0,
+            };
+            this.view = {
+                left: 0,
+                right: 0,
+                top: 0,
+                bottom: 0,
+            };
+            this.player = {
+                name: null,
+                id: null,
+                x: 0,
+                y: 0,
+            };
             this.players = [];
             this.leaderboard = [];
             this.endMessage = '';
+            this.time = null;
+            this.lastupdatetime = null;
             this.loopID = null;
             this.whiteInner = true;
 
-            // derived
+            // calculated
             this.maxTime = this.gameLength / this.tickLength;
             this.boundary.innerStart = this.boundary.outerSize / 4;
             this.boundary.centre = this.boundary.outerSize / 2;
             this.boundary.speed = this.boundary.outerSize / (4 * this.maxTime);
         },
     },
-    socket,
     Game = {
+        // Game code
         init: function() {
+            // when the page loads
             v.resetVars();
             UI.bindUIActions();
             UI.bindWindowResize();
         },
 
         begin: function() {
+            // what happens when you press play
             // valid nickname - alphanumeric and underscore
             var regex = /^\w*$/;
             var nick = document.getElementById('nameInput').value;
             if (regex.test(nick)) {
-                UI.keyActions.bind();
                 v.player.name = nick;
                 Server.connectAndStart();
             } else {
@@ -136,6 +140,8 @@ var canvas = document.getElementById('canvas'),
         },
 
         physics: function() {
+            // client side estimation of what's going to happen, which smooths it out
+            // operates on time difference, not ticks
             var now = window.performance.now(),
                 timeDiff = now - v.lastupdatetime,
                 scale, p;
@@ -158,6 +164,7 @@ var canvas = document.getElementById('canvas'),
         },
 
         startForRealz: function() {
+            // starts the game... for realz
             var gameLoop = function() {
                 v.loopID = window.requestAnimationFrame( gameLoop );
                 Game.draw();
@@ -166,19 +173,23 @@ var canvas = document.getElementById('canvas'),
 
             v.lastupdatetime = window.performance.now();
             UI.hideStartMenu();
+            UI.keyActions.bind();
             gameLoop();
         },
 
         end: function() {
+            // ends (only happens after a disconnect)
             window.cancelAnimationFrame(v.loopID);
             d.clearA();
             UI.showStartMenu();
+            UI.keyActions.unbind();
             UI.showStartMessage(v.endMessage);
             v.resetVars();
             document.body.style.backgroundColor = d.white;
         },
 
         draw: function() {
+            // draw what's happening
             // reset and translate
             c.setTransform(1, 0, 0, 1, 0, 0);
             c.translate(-v.view.left, -v.view.top);
@@ -204,12 +215,15 @@ var canvas = document.getElementById('canvas'),
         },
 
         swapColours: function() {
+            // change the colour of the 'innermost' circle when a round ends,
+            // so it looks all seamless
             v.whiteInner = !v.whiteInner;
             var colour = v.whiteInner ? d.white : d.black;
             document.body.style.backgroundColor = colour;
         },
 
         setView: function() {
+            // where the left/top etc of the window are in 'real' coordinates
             v.view.left   = v.player.x - v.centre.x;
             v.view.top    = v.player.y - v.centre.y;
             v.view.right  = v.player.x + v.centre.x;
@@ -217,6 +231,7 @@ var canvas = document.getElementById('canvas'),
         },
 
         setViewAndPlayer: function() {
+            // find myself, and set the view based on where i am
             var me = v.players.find(function(p) {
                 return p.id === v.player.id;
             });
@@ -229,6 +244,7 @@ var canvas = document.getElementById('canvas'),
     },
     Server = {
         connectAndStart: function() {
+            // connects and defines events
             try {
                 socket = io('http://circles-nerdycouple.rhcloud.com:8000', {
                     reconnection: false,
@@ -261,6 +277,7 @@ var canvas = document.getElementById('canvas'),
                     Game.end();
                 });
             } catch (e) {
+                // when 'io is not defined' because the script didn't load
                 if (e instanceof ReferenceError) UI.showStartMessage('server is down :(');
                 else UI.showStartMessage('I have no idea what went wrong ¯\\_(ツ)_/¯');
             }
@@ -271,18 +288,20 @@ var canvas = document.getElementById('canvas'),
         },
     },
     UI = {
-        // elements
         e: {
+            // html elements
+            input: document.getElementById('nameInput'),
+            playButton: document.getElementById('playButton'),
             startMenu: document.getElementById('startMenu'),
             message: document.getElementById('message'),
             leaderboard: document.getElementById('leaderboard'),
             leaderlist: document.getElementById('leaderlist'),
         },
+
         bindUIActions: function() {
-            var playButton = document.getElementById('playButton');
-            playButton.addEventListener('click', Game.begin);
-            var input = document.getElementById('nameInput');
-            input.addEventListener('keypress', function(e) {
+            // what happens when you click/press buttons
+            UI.e.playButton.addEventListener('click', Game.begin);
+            UI.e.input.addEventListener('keypress', function(e) {
                 // enter key
                 if (e.keyCode === 13) {
                     Game.begin();
@@ -291,6 +310,7 @@ var canvas = document.getElementById('canvas'),
         },
 
         bindWindowResize: function() {
+            // when the window changes size
             var resize = function() {
                 var w = window.innerWidth,
                     h = window.innerHeight,
@@ -311,11 +331,13 @@ var canvas = document.getElementById('canvas'),
                     d.clearA();
                 }
             };
+            // do it when game loads as well
             resize();
             window.addEventListener('resize', resize);
         },
 
         keyActions: {
+            // arrow keys
             bind: function() {
                 window.addEventListener('keydown', this.keydownHandler);
                 window.addEventListener('keyup', this.keyupHandler);
@@ -361,6 +383,7 @@ var canvas = document.getElementById('canvas'),
         },
 
         showStartMessage: function(msg) {
+            // the message above the input for your nickname
             UI.e.message.innerHTML = msg;
         },
 
