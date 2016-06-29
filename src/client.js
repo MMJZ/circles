@@ -190,7 +190,6 @@ var canvas = document.getElementById('canvas'),
                 if (p.id !== v.player.id) {
                     dark = (v.whiteInner === p.inner) ? true : false;
                     d.player(p.pos.x, p.pos.y, p.name, dark, false);
-                    console.log(p.inner === v.whiteInner);
                 }
             }
 
