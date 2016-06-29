@@ -25,7 +25,7 @@ var tickLength = 20; // framerate = 1000/20 = 50fps.
 var playerRadius = 20;
 var playerMaxSpeed = 20;
 var playerAcceleration = 0.2;
-var outerBoundarySize = 20000;
+var outerBoundarySize = 10000;
 var gameLength = 1000 * 60;
 var maxLag = 6000;
 
