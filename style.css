@@ -106,6 +106,10 @@ canvas {
     display: block;
 }
 
+#startContent input {
+    outline: none;
+}
+
 #playButton {
     float: right;
 
