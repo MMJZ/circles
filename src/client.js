@@ -87,6 +87,7 @@ var canvas = document.getElementById('canvas'),
                 up: false,
                 down: false,
             };
+            this.ratio = 1;
             this.centre = {
                 x: window.innerWidth/2,
                 y: window.innerHeight/2,
@@ -192,7 +193,7 @@ var canvas = document.getElementById('canvas'),
         draw: function() {
             // draw what's happening
             // reset and translate
-            c.setTransform(1, 0, 0, 1, 0, 0);
+            c.setTransform(v.ratio, 0, 0, v.ratio, 0, 0);
             c.translate(-v.view.left, -v.view.top);
 
             // background
@@ -335,6 +336,8 @@ var canvas = document.getElementById('canvas'),
                 v.centre.x = canvas.width/2;
                 v.centre.y = canvas.height/2;
                 c.scale(ratio, ratio);
+
+                v.ratio = ratio;
 
                 // if game running
                 if (v.loopID) {
