@@ -90,6 +90,7 @@ var canvas = document.getElementById('canvas'),
         },
         players: [],
         leaderboard: [],
+        endMessage: '',
         time: null,
         lastupdatetime: null,
         gridSpacing: 150,
@@ -98,18 +99,25 @@ var canvas = document.getElementById('canvas'),
         boundary: {
             outerSize: 10000,
         },
-        deriveVars: function() {
+        whiteInner: true,
+        resetVars: function() {
+            this.players = [];
+            this.leaderboard = [];
+            this.endMessage = '';
+            this.loopID = null;
+            this.whiteInner = true;
+
+            // derived
             this.maxTime = this.gameLength / this.tickLength;
             this.boundary.innerStart = this.boundary.outerSize / 4;
             this.boundary.centre = this.boundary.outerSize / 2;
             this.boundary.speed = this.boundary.outerSize / (4 * this.maxTime);
         },
-        whiteInner: true,
     },
     socket,
     Game = {
         init: function() {
-            v.deriveVars();
+            v.resetVars();
             UI.bindUIActions();
             UI.bindWindowResize();
         },
@@ -165,8 +173,8 @@ var canvas = document.getElementById('canvas'),
             window.cancelAnimationFrame(v.loopID);
             d.clearA();
             UI.showStartMenu();
-            UI.showStartMessage('');
-            v.whiteInner = true;
+            UI.showStartMessage(v.endMessage);
+            v.resetVars();
             document.body.style.backgroundColor = d.white;
         },
 
@@ -245,6 +253,9 @@ var canvas = document.getElementById('canvas'),
                     console.log(v.leaderboard);
                     UI.updateLeaderboard();
                     Game.swapColours();
+                });
+                socket.on('kick', function(){
+                    v.endMessage = 'you were lagging :(';
                 });
                 socket.on('disconnect', function(){
                     Game.end();
