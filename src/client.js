@@ -254,8 +254,8 @@ var canvas = document.getElementById('canvas'),
                     UI.updateLeaderboard();
                     Game.swapColours();
                 });
-                socket.on('kick', function(){
-                    v.endMessage = 'you were lagging :(';
+                socket.on('kick', function(message){
+                    v.endMessage = message;
                 });
                 socket.on('disconnect', function(){
                     Game.end();

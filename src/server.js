@@ -94,7 +94,7 @@ function doGameTick(){
     for(var i = 0; i < users.length; i++){
         player = users[i];
         if(player.lastUpdate < getNow() - maxLag){
-            sockets[player.id].emit('kick', 'lagging out');
+            sockets[player.id].emit('kick', 'you\'re lagging 😭 ');
             sockets[player.id].disconnect();
         }
         if(player.keys.left) player.vel.x -= playerAcceleration;
@@ -192,7 +192,7 @@ io.on('connection', function(socket) {
             console.log('cerr : player is already connected');
             socket.disconnect();
         }else if(!validNick(pplayer.name)){
-            socket.emit('kick', 'nicked by the nick :(');
+            socket.emit('kick', '❌  your name is UNACCEPTABLEEE 🍋 ');
             socket.disconnect();
         }else{
             console.log('info : ' + pplayer.name + ' connected');
