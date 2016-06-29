@@ -174,7 +174,8 @@ function endRound(){
     for(i = 0; i < Math.min(10, users.length); i++){
         leaderboard.push({
             name: users[i].name,
-            score: users[i].score
+            score: users[i].score,
+            id: users[i].id,
         });
     }
     io.emit('endRound', leaderboard);

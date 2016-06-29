@@ -241,8 +241,9 @@ var canvas = document.getElementById('canvas'),
                     v.time = time;
                 });
                 socket.on('endRound', function(leaderboard) {
-                    // TODO leaderboard stuff
                     v.leaderboard = leaderboard;
+                    console.log(v.leaderboard);
+                    UI.updateLeaderboard();
                     Game.swapColours();
                 });
                 socket.on('disconnect', function(){
@@ -259,6 +260,13 @@ var canvas = document.getElementById('canvas'),
         },
     },
     UI = {
+        // elements
+        e: {
+            startMenu: document.getElementById('startMenu'),
+            message: document.getElementById('message'),
+            leaderboard: document.getElementById('leaderboard'),
+            leaderlist: document.getElementById('leaderlist'),
+        },
         bindUIActions: function() {
             var playButton = document.getElementById('playButton');
             playButton.addEventListener('click', Game.begin);
@@ -326,26 +334,41 @@ var canvas = document.getElementById('canvas'),
         },
 
         showStartMenu: function() {
-            var a = document.getElementById('startMenu');
-            a.addEventListener('animationend', function() {
-                a.className = '';
+            UI.e.startMenu.addEventListener('animationend', function() {
+                UI.e.startMenu.className = '';
             }, false);
-            a.className = '';
+            UI.e.startMenu.className = '';
             window.focus();
         },
 
         hideStartMenu: function() {
-            var a = document.getElementById('startMenu');
-            a.addEventListener('animationend', function() {
-                a.className = 'hidden';
+            UI.e.startMenu.addEventListener('animationend', function() {
+                UI.e.startMenu.className = 'hidden';
             }, false);
-            a.className = 'animateHide';
+            UI.e.startMenu.className = 'animateHide';
             window.focus();
         },
 
         showStartMessage: function(msg) {
-            var m = document.getElementById('message');
-            m.innerHTML = msg;
+            UI.e.message.innerHTML = msg;
+        },
+
+        updateLeaderboard: function() {
+            if (v.leaderboard.length === 0) {
+                UI.e.leaderboard.className = 'hidden';
+            } else {
+                UI.e.leaderboard.className = '';
+                UI.e.leaderlist.innerHTML = '';
+                var item, text;
+                for (var i = 0; i < v.leaderboard.length; i++) {
+                    item = document.createElement('li');
+                    text = v.leaderboard[i].name + ' (' + v.leaderboard[i].score + ')';
+                    if (v.leaderboard[i].id === v.player.id)
+                        item.className = 'you';
+                    item.appendChild(document.createTextNode(text));
+                    UI.e.leaderlist.appendChild(item);
+                }
+            }
         },
     };
 
