@@ -332,8 +332,8 @@ var canvas = document.getElementById('canvas'),
                 canvas.height = h * ratio;
                 canvas.style.width = w + 'px';
                 canvas.style.height = h + 'px';
-                v.centre.x = w/2;
-                v.centre.y = h/2;
+                v.centre.x = canvas.width/2;
+                v.centre.y = canvas.height/2;
                 c.scale(ratio, ratio);
 
                 // if game running
