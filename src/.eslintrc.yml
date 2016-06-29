@@ -18,7 +18,7 @@ rules:
   semi:
     - error
     - always
-  no-console: off
+  no-console: warn
   comma-dangle:
     - error
     - always-multiline
