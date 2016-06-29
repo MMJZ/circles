@@ -61,9 +61,7 @@ var canvas = document.getElementById('canvas'),
             c.font = 'bold 20pt Source Sans Pro';
 
             if (!you) {
-                c.strokeStyle = dark ? d.white : d.black;
-                c.lineWidth = 3;
-                c.strokeText(name, x, y - 32);
+                c.shadowColor = dark ? d.white : d.black;
             }
 
             d.circle(x, y, d.radius, colour);
@@ -205,20 +203,24 @@ var canvas = document.getElementById('canvas'),
             d.clearB();
             d.boundary();
             d.grid();
-            c.textAlign = 'center';
 
             // draw all players
-            var p, dark;
+            c.textAlign = 'center';
+            c.shadowBlur = 1;
+            var p, dark, medark;
             for (var i = 0; i < v.players.length; i++) {
                 p = v.players[i];
                 if (p.id !== v.player.id) {
                     dark = (v.whiteInner === p.inner) ? true : false;
                     d.player(p.pos.x, p.pos.y, p.name, dark, false);
+                } else {
+                    medark = (v.whiteInner === p.inner) ? true : false;
                 }
             }
 
             // draw me last
-            d.player(v.player.x, v.player.y, v.player.name, true, true);
+            d.player(v.player.x, v.player.y, v.player.name, medark, false);
+            c.shadowBlur = 0;
         },
 
         swapColours: function() {
