@@ -235,7 +235,7 @@ var canvas = document.getElementById('canvas'),
             var me = v.players.find(function(p) {
                 return p.id === v.player.id;
             });
-            if (me != undefined) {
+            if (me != null) {
                 v.player.x = me.pos.x;
                 v.player.y = me.pos.y;
                 Game.setView();
