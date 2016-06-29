@@ -18,24 +18,25 @@ var canvas = document.getElementById('canvas'),
             c.clearRect(v.view.left, v.view.top, canvas.width, canvas.height);
         },
         grid: function() {
-            var xmod = v.view.left % v.gridSpacing,
-                ymod = v.view.top % v.gridSpacing;
+            var w = v.view,
+                xmod = w.left % v.gridSpacing,
+                ymod = w.top % v.gridSpacing;
 
             c.strokeStyle = '#aaa';
             c.lineWidth = 1;
 
             var i;
-            for (i = v.view.left - xmod; i <= v.view.right; i+= v.gridSpacing) {
+            for (i = w.left - xmod; i <= w.right; i+= v.gridSpacing) {
                 c.beginPath();
-                c.moveTo(i, v.view.top);
-                c.lineTo(i, v.view.bottom);
+                c.moveTo(i, w.top);
+                c.lineTo(i, w.bottom);
                 c.closePath();
                 c.stroke();
             }
-            for (i = v.view.top - ymod; i <= v.view.bottom; i+= v.gridSpacing) {
+            for (i = w.top - ymod; i <= w.bottom; i+= v.gridSpacing) {
                 c.beginPath();
-                c.moveTo(v.view.left, i);
-                c.lineTo(v.view.right, i);
+                c.moveTo(w.left, i);
+                c.lineTo(w.right, i);
                 c.closePath();
                 c.stroke();
             }
@@ -316,15 +317,21 @@ var canvas = document.getElementById('canvas'),
             var resize = function() {
                 var w = window.innerWidth,
                     h = window.innerHeight,
-                    s = window.devicePixelRatio || 1;
+                    dpr = window.devicePixelRatio || 1,
+                    bsr = c.webkitBackingStorePixelRatio ||
+                             c.mozBackingStorePixelRatio ||
+                              c.msBackingStorePixelRatio ||
+                               c.oBackingStorePixelRatio ||
+                                c.backingStorePixelRatio || 1,
+                    ratio = dpr/bsr;
 
-                canvas.width = w * s;
-                canvas.height = h * s;
+                canvas.width = w * ratio;
+                canvas.height = h * ratio;
                 canvas.style.width = w + 'px';
                 canvas.style.height = h + 'px';
                 v.centre.x = w/2;
                 v.centre.y = h/2;
-                c.scale(s, s);
+                c.scale(ratio, ratio);
 
                 // if game running
                 if (v.loopID) {
