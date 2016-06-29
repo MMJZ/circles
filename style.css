@@ -22,15 +22,48 @@ canvas {
     width: 100%;
 }
 
-#startMenu {
+#instructions {
+    border: 1px solid rgba(26,26,26,0.6);
+    width: 440px;
+    border-radius: 10px;
     display: inline-block;
+    margin-top: 1em;
+    text-align: left;
+    transition: 0.5s all;
+}
+
+#instructions.hidden, #instructions.hidden * {
+    opacity: 0;
+}
+
+#instructions h3 {
+    font-family: 'Montserrat Alternates', sans-serif;
+    padding-left: 95px;
+    margin-bottom: 0;
+}
+
+#instructions ul {
+    margin: 0 0 1em;
+    padding: 0;
+    text-align: center;
+}
+
+#instructions li {
+    list-style: none;
+    display: inline-block;
+    margin: 0.3em 0.7em;
+    font-style: italic;
+}
+
+#startMenu {
+    display: block;
     text-align: left;
     width: 400px;
     height: 130px;
     border-radius: 10px;
     padding: 20px;
     background-color: #1a1a1a;
-    margin: 10em auto;
+    margin: 10em auto 0 auto;
     animation-duration: 0.7s;
     animation-name: circleShow;
     overflow: hidden;
@@ -123,7 +156,7 @@ h1 {
     font-family: 'Montserrat Alternates', sans-serif;
     font-size: 3em;
     color: #fafafa;
-    margin: 0.2em 1em 0;
+    margin: 0.2em 75px 0;
 }
 
 #startMenu #message {

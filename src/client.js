@@ -173,7 +173,7 @@ var canvas = document.getElementById('canvas'),
             };
 
             v.lastupdatetime = window.performance.now();
-            UI.hideStartMenu();
+            UI.hideStartScreen();
             UI.keyActions.bind();
             gameLoop();
         },
@@ -182,7 +182,7 @@ var canvas = document.getElementById('canvas'),
             // ends (only happens after a disconnect)
             window.cancelAnimationFrame(v.loopID);
             d.clearA();
-            UI.showStartMenu();
+            UI.showStartScreen();
             UI.keyActions.unbind();
             UI.showStartMessage(v.endMessage);
             v.resetVars();
@@ -298,6 +298,7 @@ var canvas = document.getElementById('canvas'),
             input: document.getElementById('nameInput'),
             playButton: document.getElementById('playButton'),
             startMenu: document.getElementById('startMenu'),
+            instructions: document.getElementById('instructions'),
             message: document.getElementById('message'),
             leaderboard: document.getElementById('leaderboard'),
             leaderlist: document.getElementById('leaderlist'),
@@ -377,19 +378,21 @@ var canvas = document.getElementById('canvas'),
             },
         },
 
-        showStartMenu: function() {
+        showStartScreen: function() {
             UI.e.startMenu.addEventListener('animationend', function() {
                 UI.e.startMenu.className = '';
             }, false);
             UI.e.startMenu.className = '';
+            UI.e.instructions.className = '';
             window.focus();
         },
 
-        hideStartMenu: function() {
+        hideStartScreen: function() {
             UI.e.startMenu.addEventListener('animationend', function() {
                 UI.e.startMenu.className = 'hidden';
             }, false);
             UI.e.startMenu.className = 'animateHide';
+            UI.e.instructions.className = 'hidden';
             window.focus();
         },
 
