@@ -6,6 +6,7 @@ var canvas = document.getElementById('canvas'),
         black: '#1a1a1a',
         radius: 20,
         clearA: function() {
+            c.setTransform(1, 0, 0, 1, 0, 0);
             c.clearRect(0, 0, canvas.width, canvas.height);
         },
         clearB: function() {
@@ -162,7 +163,6 @@ var canvas = document.getElementById('canvas'),
 
         end: function() {
             window.cancelAnimationFrame(v.loopID);
-            c.setTransform(1, 0, 0, 1, 0, 0);
             d.clearA();
             UI.showStartMenu();
             UI.showStartMessage('');
