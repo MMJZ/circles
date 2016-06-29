@@ -51,7 +51,7 @@ var canvas = document.getElementById('canvas'),
         },
         player: function(x, y, name, dark, you) {
             var colour = you ? '#5599BB' : dark ? d.black : d.white;
-            c.font = '16pt Montserrat Alternates';
+            c.font = 'bold 20pt Source Sans Pro';
 
             d.circle(x, y, d.radius, colour);
             c.fillText(name, x, y - 32);

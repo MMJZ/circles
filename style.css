@@ -1,6 +1,7 @@
 html, body {
     padding: 0;
     margin: 0;
+    font-family: 'Source Sans Pro', sans-serif;
 }
 
 body {
@@ -90,7 +91,7 @@ canvas {
 
 #startContent span {
     display: block;
-    padding-right: 30px;
+    padding-right: 15px;
     overflow: hidden;
 }
 
@@ -100,7 +101,7 @@ canvas {
     border: none;
     padding: 10px;
     border-radius: 5px;
-    height: 1.2em;
+    height: 2.5em;
 }
 
 #playButton {
@@ -109,7 +110,7 @@ canvas {
     border: none;
     padding: 10px;
     border-radius: 5px;
-    height: 2.7em;
+    height: 2.5em;
     line-height: 0;
 
     background-color: #ededed;
@@ -139,7 +140,6 @@ h1 {
     border: 1px solid rgba(26,26,26, 0.3);
     color: rgba(26,26,26, 0.8);
     padding: 1em;
-    font-family: Montserrat Alternates;
     transition: 0.3s all;
 }
 
@@ -149,6 +149,7 @@ h1 {
 
 #leaderboard > h3 {
     margin: 0 0 0.3em;
+    font-family: 'Montserrat Alternates', sans-serif;
 }
 
 ol {
