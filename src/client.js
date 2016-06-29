@@ -207,19 +207,17 @@ var canvas = document.getElementById('canvas'),
             // draw all players
             c.textAlign = 'center';
             c.shadowBlur = 1;
-            var p, dark, medark;
+            var p, dark;
             for (var i = 0; i < v.players.length; i++) {
                 p = v.players[i];
                 if (p.id !== v.player.id) {
                     dark = (v.whiteInner === p.inner) ? true : false;
                     d.player(p.pos.x, p.pos.y, p.name, dark, false);
-                } else {
-                    medark = (v.whiteInner === p.inner) ? true : false;
                 }
             }
 
             // draw me last
-            d.player(v.player.x, v.player.y, v.player.name, medark, false);
+            d.player(v.player.x, v.player.y, v.player.name, true, true);
             c.shadowBlur = 0;
         },
 
