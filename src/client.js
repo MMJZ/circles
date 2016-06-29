@@ -87,8 +87,8 @@ var canvas = document.getElementById('canvas'),
                 down: false,
             };
             this.centre = {
-                x: 0,
-                y: 0,
+                x: window.innerWidth/2,
+                y: window.innerHeight/2,
             };
             this.view = {
                 left: 0,
