@@ -273,6 +273,9 @@ var canvas = document.getElementById('canvas'),
                 socket.on('kick', function(message){
                     v.endMessage = message;
                 });
+                socket.on('ping', function(time) {
+                    socket.emit('pong', time);
+                });
                 socket.on('disconnect', function(){
                     Game.end();
                 });
