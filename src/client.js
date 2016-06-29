@@ -266,7 +266,6 @@ var canvas = document.getElementById('canvas'),
                 });
                 socket.on('endRound', function(leaderboard) {
                     v.leaderboard = leaderboard;
-                    console.log(v.leaderboard);
                     UI.updateLeaderboard();
                     Game.swapColours();
                 });
