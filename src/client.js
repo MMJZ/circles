@@ -151,8 +151,6 @@ var canvas = document.getElementById('canvas'),
         startForRealz: function() {
             var gameLoop = function() {
                 v.loopID = window.requestAnimationFrame( gameLoop );
-
-                Server.update();
                 Game.draw();
                 Game.physics();
             };
@@ -314,6 +312,7 @@ var canvas = document.getElementById('canvas'),
                     case 39: v.keys.right = true; break;
                     case 40: v.keys.down  = true; break;
                 }
+                Server.update();
             },
             keyupHandler: function(e) {
                 switch (e.keyCode) {
@@ -322,6 +321,7 @@ var canvas = document.getElementById('canvas'),
                     case 39: v.keys.right = false; break;
                     case 40: v.keys.down  = false; break;
                 }
+                Server.update();
             },
         },
 

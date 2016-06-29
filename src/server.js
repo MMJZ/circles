@@ -114,7 +114,7 @@ function doGameTick(){
     var outP = getOuterBoundaryPosition();
     var inP = getInnerBoundaryPosition();
     
-    for(i = 0; i < users.length - 1; i++){
+    for(i = 0; i < users.length; i++){
         player = users[i];
         var dx = centrePoint - player.pos.x;
         var dy = centrePoint - player.pos.y;
@@ -137,8 +137,8 @@ function doGameTick(){
                 var normalSpeed = -(normalX * player.vel.x + normalY * player.vel.y);
                 var tangentSpeed = tangentX * player.vel.x + tangentY * player.vel.y;
                 player.vel = {
-                    x: normalSpeed * normalX + tangentSpeed * tangentX,
-                    y: normalSpeed * normalY + tangentSpeed * tangentY
+                    x: normalSpeed * normalX * 2 + tangentSpeed * tangentX * 2,
+                    y: normalSpeed * normalY * 2 + tangentSpeed * tangentY * 2
                 };
             }else if(dx2 + dy2 < sq(centrePoint - inP + playerRadius)){
                 bashCircles(player, {pos:{x:centrePoint,y:centrePoint},vel:{x:0,y:0}});
@@ -223,7 +223,7 @@ io.on('connection', function(socket) {
     });
 
     socket.on('disconnect', function () {
-        if(currentPlayer.id === null) return;
+        if(currentPlayer === null) return;
         var indexx = findIndex(users, currentPlayer.id);
         if (indexx > -1) users.splice(indexx, 1);
         console.log('info : ' + currentPlayer.name + ' disconnected');
