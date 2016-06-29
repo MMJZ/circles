@@ -95,7 +95,7 @@ var canvas = document.getElementById('canvas'),
         gameLength: 1000 * 60,
         tickLength: 20,
         boundary: {
-            outerSize: 6000,
+            outerSize: 20000,
         },
         deriveVars: function() {
             this.maxTime = this.gameLength / this.tickLength;
