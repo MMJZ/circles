@@ -73,7 +73,7 @@ var canvas = document.getElementById('canvas'),
     v = {
         // global variables
         // hardcoded
-        gridSpacing: 150,
+        gridSpacing: 200,
         gameLength: 1000 * 60,
         tickLength: 20,
         boundary: {
