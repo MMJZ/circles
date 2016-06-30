@@ -15,7 +15,7 @@ var canvas = document.getElementById('canvas'),
         },
         clearB: function() {
             // clears around the player
-            c.clearRect(v.view.left, v.view.top, canvas.width, canvas.height);
+            c.clearRect(v.view.left, v.view.top, v.width, v.height);
         },
         grid: function() {
             var w = v.view,
@@ -87,7 +87,6 @@ var canvas = document.getElementById('canvas'),
                 up: false,
                 down: false,
             };
-            this.ratio = 1;
             this.centre = {
                 x: window.innerWidth/2,
                 y: window.innerHeight/2,
@@ -107,6 +106,9 @@ var canvas = document.getElementById('canvas'),
             this.players = [];
             this.leaderboard = [];
             this.endMessage = '';
+            this.ratio = 1;
+            this.width = window.innerWidth;
+            this.height = window.innerHeight;
             this.time = null;
             this.lastupdatetime = null;
             this.loopID = null;
@@ -193,7 +195,8 @@ var canvas = document.getElementById('canvas'),
         draw: function() {
             // draw what's happening
             // reset and translate
-            c.setTransform(v.ratio, 0, 0, v.ratio, -v.view.left, -v.view.top);
+            c.setTransform(v.ratio, 0, 0, v.ratio, 0, 0);
+            c.translate(-v.view.left, -v.view.top);
 
             // background
             d.clearB();
@@ -318,24 +321,22 @@ var canvas = document.getElementById('canvas'),
         bindWindowResize: function() {
             // when the window changes size
             var resize = function() {
-                var w = window.innerWidth,
-                    h = window.innerHeight,
-                    dpr = window.devicePixelRatio || 1,
+                var dpr = window.devicePixelRatio || 1,
                     bsr = c.webkitBackingStorePixelRatio ||
                              c.mozBackingStorePixelRatio ||
                               c.msBackingStorePixelRatio ||
                                c.oBackingStorePixelRatio ||
-                                c.backingStorePixelRatio || 1,
-                    ratio = dpr/bsr;
+                                c.backingStorePixelRatio || 1;
+                v.ratio = dpr/bsr;
+                v.width = window.innerWidth;
+                v.height = window.innerHeight;
 
-                canvas.width = w * ratio;
-                canvas.height = h * ratio;
-                canvas.style.width = w + 'px';
-                canvas.style.height = h + 'px';
-                v.centre.x = canvas.width/2;
-                v.centre.y = canvas.height/2;
-
-                v.ratio = ratio;
+                canvas.width = v.width * v.ratio;
+                canvas.height = v.height * v.ratio;
+                canvas.style.width = v.width + 'px';
+                canvas.style.height = v.height + 'px';
+                v.centre.x = v.width/2;
+                v.centre.y = v.height/2;
 
                 // if game running
                 if (v.loopID) {
