@@ -24,16 +24,15 @@ canvas {
 
 #instructions {
     border: 1px solid rgba(26,26,26,0.6);
-    width: 440px;
+    color: #1a1a1a;
+    width: calc(100% - 2px);
     border-radius: 10px;
     display: inline-block;
     margin-top: 1em;
     text-align: left;
     transition: 0.5s all;
-}
-
-#instructions.hidden, #instructions.hidden * {
-    opacity: 0;
+    overflow: hidden;
+    height: 85px;
 }
 
 #instructions h3 {
@@ -51,49 +50,49 @@ canvas {
 #instructions li {
     list-style: none;
     display: inline-block;
-    margin: 0.3em 0.7em;
+    margin: 0.3em 0.7em 1em;
     font-style: italic;
 }
 
 #startMenu {
     display: block;
     text-align: left;
-    width: 400px;
+    width: calc(100% - 40px);
     height: 130px;
     border-radius: 10px;
     padding: 20px;
     background-color: #1a1a1a;
-    margin: 10em auto 0 auto;
-    animation-duration: 0.7s;
-    animation-name: circleShow;
     overflow: hidden;
 }
 
-#startMenu.hidden {
+#startScreen {
+    animation-duration: 0.3s;
+    animation-name: circleShow;
+    width: 440px;
+    height: 275px;
+    display: block;
+    margin: 0 auto;
+    margin-top: 10em;
+    overflow: hidden;
+}
+
+#startScreen.hidden {
     display: none;
 }
 
-#startMenu.animateHide {
-    animation-duration: 0.7s;
+#startScreen.animateHide {
+    animation-duration: 0.3s;
     animation-name: circleHide;
     overflow: hidden;
 }
-
-#startMenu * {
-    transition: 0.2s;
-}
-
-#startMenu.animateHide * {
-    opacity: 0;
-}
-
 @keyframes circleHide {
     30% {
-        width: 130px;
-        height: 130px;
+        width: 275px;
+        height: 275px;
+        margin-top: 9em;
     }
-    60% {
-        border-radius: 200px;
+    40% {
+        border-radius: 400px;
         opacity: 1;
     }
     100% {
@@ -111,13 +110,13 @@ canvas {
         padding: 0;
         margin-top: -20px;
     }
-    40% {
-        border-radius: 200px;
+    30% {
+        border-radius: 400px;
         opacity: 1;
     }
-    70% {
-        width: 130px;
-        height: 130px;
+    60% {
+        width: 275px;
+        height: 275px;
     }
 }
 

@@ -300,8 +300,7 @@ var canvas = document.getElementById('canvas'),
             // html elements
             input: document.getElementById('nameInput'),
             playButton: document.getElementById('playButton'),
-            startMenu: document.getElementById('startMenu'),
-            instructions: document.getElementById('instructions'),
+            startScreen: document.getElementById('startScreen'),
             message: document.getElementById('message'),
             leaderboard: document.getElementById('leaderboard'),
             leaderlist: document.getElementById('leaderlist'),
@@ -382,20 +381,18 @@ var canvas = document.getElementById('canvas'),
         },
 
         showStartScreen: function() {
-            UI.e.startMenu.addEventListener('animationend', function() {
-                UI.e.startMenu.className = '';
+            UI.e.startScreen.addEventListener('animationend', function() {
+                UI.e.startScreen.className = '';
             }, false);
-            UI.e.startMenu.className = '';
-            UI.e.instructions.className = '';
+            UI.e.startScreen.className = '';
             window.focus();
         },
 
         hideStartScreen: function() {
-            UI.e.startMenu.addEventListener('animationend', function() {
-                UI.e.startMenu.className = 'hidden';
+            UI.e.startScreen.addEventListener('animationend', function() {
+                UI.e.startScreen.className = 'hidden';
             }, false);
-            UI.e.startMenu.className = 'animateHide';
-            UI.e.instructions.className = 'hidden';
+            UI.e.startScreen.className = 'animateHide';
             window.focus();
         },
 
