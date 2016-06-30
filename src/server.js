@@ -130,6 +130,7 @@ function doGameTick(){
                 var droot = Math.sqrt(dx2 + dy2);
                 if(Math.abs(droot - centrePoint + outP) > 3 * playerRadius){
                     player.pos = getFreePosition();
+                    player.vel = {x:0,y:0};
                     continue;
                 }
                 var normalX = dx / droot;
