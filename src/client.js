@@ -333,8 +333,8 @@ var canvas = document.getElementById('canvas'),
                 canvas.height = h * ratio;
                 canvas.style.width = w + 'px';
                 canvas.style.height = h + 'px';
-                v.centre.x = canvas.width/2;
-                v.centre.y = canvas.height/2;
+                v.centre.x = canvas.width/2/ratio;
+                v.centre.y = canvas.height/2/ratio;
                 c.scale(ratio, ratio);
 
                 v.ratio = ratio;
