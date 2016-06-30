@@ -193,8 +193,7 @@ var canvas = document.getElementById('canvas'),
         draw: function() {
             // draw what's happening
             // reset and translate
-            c.setTransform(v.ratio, 0, 0, v.ratio, 0, 0);
-            c.translate(-v.view.left, -v.view.top);
+            c.setTransform(v.ratio, 0, 0, v.ratio, -v.view.left, -v.view.top);
 
             // background
             d.clearB();
@@ -333,9 +332,8 @@ var canvas = document.getElementById('canvas'),
                 canvas.height = h * ratio;
                 canvas.style.width = w + 'px';
                 canvas.style.height = h + 'px';
-                v.centre.x = canvas.width/2/ratio;
-                v.centre.y = canvas.height/2/ratio;
-                c.scale(ratio, ratio);
+                v.centre.x = canvas.width/2;
+                v.centre.y = canvas.height/2;
 
                 v.ratio = ratio;
 
