@@ -362,19 +362,20 @@ var canvas = document.getElementById('canvas'),
             },
             keydownHandler: function(e) {
                 switch (e.keyCode) {
-                    case 37: v.keys.left  = true; break;
-                    case 38: v.keys.up    = true; break;
-                    case 39: v.keys.right = true; break;
-                    case 40: v.keys.down  = true; break;
+                    // arrow keys, WASD
+                    case 37: case 65: v.keys.left  = true; break;
+                    case 38: case 87: v.keys.up    = true; break;
+                    case 39: case 68: v.keys.right = true; break;
+                    case 40: case 83: v.keys.down  = true; break;
                 }
                 Server.update();
             },
             keyupHandler: function(e) {
                 switch (e.keyCode) {
-                    case 37: v.keys.left  = false; break;
-                    case 38: v.keys.up    = false; break;
-                    case 39: v.keys.right = false; break;
-                    case 40: v.keys.down  = false; break;
+                    case 37: case 65: v.keys.left  = false; break;
+                    case 38: case 87: v.keys.up    = false; break;
+                    case 39: case 68: v.keys.right = false; break;
+                    case 40: case 83: v.keys.down  = false; break;
                 }
                 Server.update();
             },
