@@ -170,7 +170,7 @@ function endRound(){
     time = 0;
     for(var i = 0; i < users.length; i++){
         if(users[i].inner) users[i].score += users.length - 1;
-        else users.inner = true;
+        else users[i].inner = true;
     }
     users.sort(function(a, b) { return b.score - a.score; });
     var leaderboard = [];
