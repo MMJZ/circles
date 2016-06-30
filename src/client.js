@@ -74,10 +74,10 @@ var canvas = document.getElementById('canvas'),
         // global variables
         // hardcoded
         gridSpacing: 200,
-        gameLength: 1000 * 60,
+        gameLength: 1000 * 40,
         tickLength: 20,
         boundary: {
-            outerSize: 10000,
+            outerSize: 8000,
         },
         resetVars: function() {
             // defaults

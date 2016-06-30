@@ -25,8 +25,8 @@ var tickLength = 20; // framerate = 1000/20 = 50fps.
 var playerRadius = 20;
 var playerMaxSpeed = 20;
 var playerAcceleration = 0.2;
-var outerBoundarySize = 10000;
-var gameLength = 1000 * 60;
+var outerBoundarySize = 8000;
+var gameLength = 1000 * 40;
 var maxLag = 10000;
 
 // Deduced static variables
@@ -97,6 +97,8 @@ function doGameTick(){
         if(player.keys.up) player.vel.y -= playerAcceleration;
         if(player.keys.down) player.vel.y += playerAcceleration;
         if(player.keys.right) player.vel.x += playerAcceleration;
+        player.vel.x *= 0.997;
+        player.vel.y *= 0.997;
         if(player.vel.x > playerMaxSpeed) player.vel.x = playerMaxSpeed;
         if(player.vel.x < -playerMaxSpeed) player.vel.x = -playerMaxSpeed;
         if(player.vel.y > playerMaxSpeed) player.vel.y = playerMaxSpeed;
@@ -126,6 +128,10 @@ function doGameTick(){
         }else{
             if(dx2 + dy2 >= sq(centrePoint - outP - playerRadius)){
                 var droot = Math.sqrt(dx2 + dy2);
+                if(Math.abs(droot - centrePoint + outP) > 3 * playerRadius){
+                    player.pos = getFreePosition();
+                    continue;
+                }
                 var normalX = dx / droot;
                 var normalY = dy / droot;
                 var tangentX = -normalY;
