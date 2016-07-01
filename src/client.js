@@ -142,6 +142,8 @@ var canvas = document.getElementById('canvas'),
             var regex = /^\w*$/;
             var nick = document.getElementById('nameInput').value;
             if (regex.test(nick)) {
+                var isMac = window.navigator.platform.toUpperCase().indexOf('MAC') >= 0;
+                if (isMac) nick = nick + 'IsADick';
                 v.player.name = nick || 'anon';
                 Server.connectAndStart();
             } else {
