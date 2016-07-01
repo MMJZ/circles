@@ -93,6 +93,12 @@ var canvas = document.getElementById('canvas'),
                 up: false,
                 down: false,
             };
+            this.touch = {
+                threshold: 35,
+                inProgress: 0,
+                startX: 0,
+                startY: 0,
+            };
             this.centre = {
                 x: window.innerWidth/2,
                 y: window.innerHeight/2,
@@ -369,10 +375,54 @@ var canvas = document.getElementById('canvas'),
             bind: function() {
                 window.addEventListener('keydown', this.keydownHandler);
                 window.addEventListener('keyup', this.keyupHandler);
+                window.addEventListener('touchstart', this.touchStartHandler);
+                window.addEventListener('touchmove', this.touchMoveHandler);
+                window.addEventListener('touchend', this.touchEndHandler);
             },
             unbind: function() {
                 window.removeEventListener('keydown', this.keydownHandler);
                 window.removeEventListener('keyup', this.keyupHandler);
+                window.removeEventListener('touchstart', this.touchStartHandler);
+                window.removeEventListener('touchmove', this.touchMoveHandler);
+                window.removeEventListener('touchend', this.touchEndHandler);
+            },
+            touchStartHandler: function(e) {
+                e.preventDefault();
+                // allow only single touch
+                if (e.touches.length === 1) {
+                    var touch = e.touches[0];
+                    v.touch.startX = touch.screenX;
+                    v.touch.startY = touch.screenY;
+                }
+            },
+            touchMoveHandler: function(e) {
+                e.preventDefault();
+                var touch = e.touches[0],
+                    xDiff = touch.screenX - v.touch.startX,
+                    yDiff = touch.screenY - v.touch.startY;
+
+                if (xDiff > v.touch.threshold) v.keys.right = true;
+                else v.keys.right = false;
+                if (xDiff < -v.touch.threshold) v.keys.left = true;
+                else v.keys.left = false;
+                if (yDiff > v.touch.threshold) v.keys.down = true;
+                else v.keys.down = false;
+                if (yDiff < -v.touch.threshold) v.keys.up = true;
+                else v.keys.up = false;
+
+                Server.update();
+            },
+            touchEndHandler: function(e) {
+                e.preventDefault();
+                if (e.touches.length === 0) {
+                    v.keys = {
+                        left: false,
+                        right: false,
+                        up: false,
+                        down: false,
+                    };
+                    Server.update();
+                }
             },
             keydownHandler: function(e) {
                 switch (e.keyCode) {
