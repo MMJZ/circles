@@ -49,6 +49,10 @@ var canvas = document.getElementById('canvas'),
             c.arc(v.boundary.centre, v.boundary.centre, d.getInnerBoundaryRadius(), 0, 2*Math.PI, true);
             c.fill();
         },
+        time: function() {
+            c.fillStyle = v.whiteInner ? d.black : d.white;
+            c.fillText(d.getSecondsLeft(), v.boundary.centre, v.boundary.centre);
+        },
         circle: function(x, y, r, fs) {
             if (fs !== undefined) c.fillStyle = fs;
             c.beginPath();
@@ -59,7 +63,6 @@ var canvas = document.getElementById('canvas'),
         player: function(x, y, name, dark, you) {
             var colour = you ? '#5599BB' : dark ? d.black : d.white;
             c.shadowColor = you ? 'transparent' : dark ? d.white : d.black;
-            c.font = 'bold 20pt Source Sans Pro';
             d.circle(x, y, d.radius, colour);
             c.fillText(name, x, y - 32);
         },
@@ -68,6 +71,9 @@ var canvas = document.getElementById('canvas'),
         },
         getInnerBoundaryRadius: function (){
             return v.boundary.centre - v.time * v.boundary.speed - v.boundary.innerStart;
+        },
+        getSecondsLeft: function(){
+            return Math.ceil((1 - v.time / v.maxTime) * v.gameLength / 1000);
         },
     },
     v = {
@@ -200,9 +206,16 @@ var canvas = document.getElementById('canvas'),
 
             // background
             d.clearB();
+            c.globalCompositeOperation = 'xor';
+            c.font = '200px Montserrat Alternates';
+            c.textBaseline = 'middle';
+            d.time();
             d.boundary();
+            c.globalCompositeOperation = 'source-over';
             d.grid();
 
+            c.font = 'bold 20pt Source Sans Pro';
+            c.textBaseline = 'alphabetic';
             // draw all players
             c.textAlign = 'center';
             c.shadowBlur = 1;
