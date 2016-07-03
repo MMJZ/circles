@@ -7,6 +7,8 @@ var canvas = document.getElementById('canvas'),
         white: '#fafafa',
         black: '#1a1a1a',
         radius: 20,
+        gridcanvas: null,
+        gridc: null,
         // functions
         clearA: function() {
             // resets canvas and clears
@@ -18,27 +20,29 @@ var canvas = document.getElementById('canvas'),
             c.clearRect(v.view.left, v.view.top, v.width, v.height);
         },
         grid: function() {
-            var w = v.view,
-                xmod = w.left % v.gridSpacing,
-                ymod = w.top % v.gridSpacing;
+            var xPos = v.view.left - ((v.view.left + v.gridSpacing) % v.gridSpacing),
+                yPos = v.view.top  - ((v.view.top  + v.gridSpacing) % v.gridSpacing);
 
-            c.strokeStyle = '#aaa';
-            c.lineWidth = 1;
+            c.drawImage(v.gridcanvas, xPos, yPos);
+        },
+        gridPrerender: function() {
+            v.gridc.strokeStyle = '#aaa';
+            v.gridc.lineWidth = 1;
 
             var i;
-            for (i = w.left - xmod; i <= w.right; i+= v.gridSpacing) {
-                c.beginPath();
-                c.moveTo(i, w.top);
-                c.lineTo(i, w.bottom);
-                c.closePath();
-                c.stroke();
+            for (i = 0; i < v.gridcanvas.width; i+= v.gridSpacing) {
+                v.gridc.beginPath();
+                v.gridc.moveTo(i, 0);
+                v.gridc.lineTo(i, v.gridcanvas.height);
+                v.gridc.closePath();
+                v.gridc.stroke();
             }
-            for (i = w.top - ymod; i <= w.bottom; i+= v.gridSpacing) {
-                c.beginPath();
-                c.moveTo(w.left, i);
-                c.lineTo(w.right, i);
-                c.closePath();
-                c.stroke();
+            for (i = 0; i < v.gridcanvas.height; i+= v.gridSpacing) {
+                v.gridc.beginPath();
+                v.gridc.moveTo(0, i);
+                v.gridc.lineTo(v.gridcanvas.width, i);
+                v.gridc.closePath();
+                v.gridc.stroke();
             }
         },
         boundary: function() {
@@ -137,6 +141,9 @@ var canvas = document.getElementById('canvas'),
         // Game code
         init: function() {
             // when the page loads
+            v.gridcanvas = document.createElement('canvas');
+            v.gridc = v.gridcanvas.getContext('2d');
+
             v.resetVars();
             UI.bindUIActions();
             UI.bindWindowResize();
@@ -355,6 +362,11 @@ var canvas = document.getElementById('canvas'),
                 canvas.height = v.height * v.ratio;
                 canvas.style.width = v.width + 'px';
                 canvas.style.height = v.height + 'px';
+
+                v.gridcanvas.width = (v.width + v.gridSpacing) * v.ratio;
+                v.gridcanvas.height = (v.height + v.gridSpacing) * v.ratio;
+                d.gridPrerender();
+
                 v.centre.x = v.width/2;
                 v.centre.y = v.height/2;
 
