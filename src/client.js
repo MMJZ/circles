@@ -1,500 +1,648 @@
-var canvas = document.getElementById('canvas'),
-    c = canvas.getContext('2d'),
-    socket,
-    d = {
-        // drawing code
-        // variables
-        white: '#fafafa',
-        black: '#1a1a1a',
-        radius: 20,
-        gridcanvas: null,
-        gridc: null,
-        // functions
-        clearA: function() {
-            // resets canvas and clears
-            c.setTransform(1, 0, 0, 1, 0, 0);
-            c.clearRect(0, 0, canvas.width, canvas.height);
-        },
-        clearB: function() {
-            // clears around the player
-            c.clearRect(v.view.left, v.view.top, v.width, v.height);
-        },
-        grid: function() {
-            var xPos = v.view.left - ((v.view.left + v.gridSpacing) % v.gridSpacing),
-                yPos = v.view.top  - ((v.view.top  + v.gridSpacing) % v.gridSpacing);
+/******/ (function(modules) { // webpackBootstrap
+/******/ 	// The module cache
+/******/ 	var installedModules = {};
 
-            c.drawImage(v.gridcanvas, xPos, yPos);
-        },
-        gridPrerender: function() {
-            v.gridc.strokeStyle = '#aaa';
-            v.gridc.lineWidth = 1;
+/******/ 	// The require function
+/******/ 	function __webpack_require__(moduleId) {
 
-            var i;
-            for (i = 0; i < v.gridcanvas.width; i+= v.gridSpacing) {
-                v.gridc.beginPath();
-                v.gridc.moveTo(i, 0);
-                v.gridc.lineTo(i, v.gridcanvas.height);
-                v.gridc.closePath();
-                v.gridc.stroke();
-            }
-            for (i = 0; i < v.gridcanvas.height; i+= v.gridSpacing) {
-                v.gridc.beginPath();
-                v.gridc.moveTo(0, i);
-                v.gridc.lineTo(v.gridcanvas.width, i);
-                v.gridc.closePath();
-                v.gridc.stroke();
-            }
-        },
-        boundary: function() {
-            // draws the second area (not the innermost), kind of like a doughnut
-            c.fillStyle = v.whiteInner ? d.black : d.white;
-            c.beginPath();
-            c.arc(v.boundary.centre, v.boundary.centre, d.getOuterBoundaryRadius(), 0, 2*Math.PI);
-            c.arc(v.boundary.centre, v.boundary.centre, d.getInnerBoundaryRadius(), 0, 2*Math.PI, true);
-            c.fill();
-        },
-        time: function() {
-            c.fillStyle = v.whiteInner ? d.black : d.white;
-            c.fillText(d.getSecondsLeft(), v.boundary.centre, v.boundary.centre);
-        },
-        circle: function(x, y, r, fs) {
-            if (fs !== undefined) c.fillStyle = fs;
-            c.beginPath();
-            c.arc(x, y, r, 0, Math.PI*2, true);
-            c.closePath();
-            c.fill();
-        },
-        player: function(x, y, name, dark, you) {
-            var colour = you ? '#5599BB' : dark ? d.black : d.white;
-            c.shadowColor = you ? 'transparent' : dark ? d.white : d.black;
-            d.circle(x, y, d.radius, colour);
-            c.fillText(name, x, y - 32);
-        },
-        getOuterBoundaryRadius: function (){
-            return v.boundary.centre - v.time * v.boundary.speed;
-        },
-        getInnerBoundaryRadius: function (){
-            return v.boundary.centre - v.time * v.boundary.speed - v.boundary.innerStart;
-        },
-        getSecondsLeft: function(){
-            return Math.ceil((1 - v.time / v.maxTime) * v.gameLength / 1000);
-        },
-    },
-    v = {
-        // global variables
-        // hardcoded
-        gridSpacing: 200,
-        gameLength: 1000 * 40,
-        tickLength: 20,
-        boundary: {
-            outerSize: 8000,
-        },
-        resetVars: function() {
-            // defaults
-            this.keys =  {
-                left: false,
-                right: false,
-                up: false,
-                down: false,
-            };
-            this.touch = {
-                threshold: 35,
-                inProgress: 0,
-                startX: 0,
-                startY: 0,
-            };
-            this.centre = {
-                x: window.innerWidth/2,
-                y: window.innerHeight/2,
-            };
-            this.view = {
-                left: 0,
-                right: 0,
-                top: 0,
-                bottom: 0,
-            };
-            this.player = {
-                name: null,
-                id: null,
-                x: 0,
-                y: 0,
-            };
-            this.players = [];
-            this.leaderboard = [];
-            this.endMessage = '';
-            this.ratio = 1;
-            this.width = window.innerWidth;
-            this.height = window.innerHeight;
-            this.time = null;
-            this.lastupdatetime = null;
-            this.loopID = null;
-            this.whiteInner = true;
+/******/ 		// Check if module is in cache
+/******/ 		if(installedModules[moduleId])
+/******/ 			return installedModules[moduleId].exports;
 
-            // calculated
-            this.maxTime = this.gameLength / this.tickLength;
-            this.boundary.innerStart = this.boundary.outerSize / 4;
-            this.boundary.centre = this.boundary.outerSize / 2;
-            this.boundary.speed = this.boundary.outerSize / (4 * this.maxTime);
-        },
-    },
-    Game = {
-        // Game code
-        init: function() {
-            // when the page loads
-            v.gridcanvas = document.createElement('canvas');
-            v.gridc = v.gridcanvas.getContext('2d');
+/******/ 		// Create a new module (and put it into the cache)
+/******/ 		var module = installedModules[moduleId] = {
+/******/ 			exports: {},
+/******/ 			id: moduleId,
+/******/ 			loaded: false
+/******/ 		};
 
-            v.resetVars();
-            UI.bindUIActions();
-            UI.bindWindowResize();
-        },
+/******/ 		// Execute the module function
+/******/ 		modules[moduleId].call(module.exports, module, module.exports, __webpack_require__);
 
-        begin: function() {
-            // what happens when you press play
-            // valid nickname - alphanumeric and underscore
-            var regex = /^\w*$/;
-            var nick = document.getElementById('nameInput').value;
-            if (regex.test(nick)) {
-                var isMac = window.navigator.platform.toUpperCase().indexOf('MAC') >= 0;
-                if (isMac) nick = nick + 'IsADick';
-                v.player.name = nick || 'anon';
-                Server.connectAndStart();
-            } else {
-                UI.showStartMessage('nickname must be alphanumeric');
-            }
-        },
+/******/ 		// Flag the module as loaded
+/******/ 		module.loaded = true;
 
-        physics: function() {
-            // client side estimation of what's going to happen, which smooths it out
-            // operates on time difference, not ticks
-            var now = window.performance.now(),
-                timeDiff = now - v.lastupdatetime,
-                scale, p;
+/******/ 		// Return the exports of the module
+/******/ 		return module.exports;
+/******/ 	}
 
-            scale = timeDiff / v.tickLength;
 
-            for(var i = 0; i < v.players.length; i++) {
-                p = v.players[i];
-                p.pos.x += p.vel.x * scale;
-                p.pos.y += p.vel.y * scale;
-                if (p.id === v.player.id) {
-                    v.player.x = p.pos.x;
-                    v.player.y = p.pos.y;
-                }
-            }
+/******/ 	// expose the modules object (__webpack_modules__)
+/******/ 	__webpack_require__.m = modules;
 
-            Game.setView();
+/******/ 	// expose the module cache
+/******/ 	__webpack_require__.c = installedModules;
 
-            v.lastupdatetime = now;
-        },
+/******/ 	// __webpack_public_path__
+/******/ 	__webpack_require__.p = "";
 
-        startForRealz: function() {
-            // starts the game... for realz
-            var gameLoop = function() {
-                v.loopID = window.requestAnimationFrame( gameLoop );
-                Game.draw();
-                Game.physics();
-            };
+/******/ 	// Load entry module and return exports
+/******/ 	return __webpack_require__(0);
+/******/ })
+/************************************************************************/
+/******/ ([
+/* 0 */
+/***/ function(module, exports, __webpack_require__) {
 
-            v.lastupdatetime = window.performance.now();
-            UI.hideStartScreen();
-            UI.keyActions.bind();
-            gameLoop();
-        },
+	var game = __webpack_require__(1)();
 
-        end: function() {
-            // ends (only happens after a disconnect)
-            window.cancelAnimationFrame(v.loopID);
-            d.clearA();
-            UI.showStartScreen();
-            UI.keyActions.unbind();
-            UI.showStartMessage(v.endMessage);
-            v.resetVars();
-            document.body.style.backgroundColor = d.white;
-        },
+	game.init();
 
-        draw: function() {
-            // draw what's happening
-            // reset and translate
-            c.setTransform(v.ratio, 0, 0, v.ratio, 0, 0);
-            c.translate(-v.view.left, -v.view.top);
 
-            // background
-            d.clearB();
-            c.globalCompositeOperation = 'xor';
-            c.font = '200px Montserrat Alternates';
-            c.textBaseline = 'middle';
-            d.time();
-            d.boundary();
-            c.globalCompositeOperation = 'source-over';
-            d.grid();
+/***/ },
+/* 1 */
+/***/ function(module, exports, __webpack_require__) {
 
-            c.font = 'bold 20pt Source Sans Pro';
-            c.textBaseline = 'alphabetic';
-            // draw all players
-            c.textAlign = 'center';
-            c.shadowBlur = 1;
-            var p, dark;
-            for (var i = 0; i < v.players.length; i++) {
-                p = v.players[i];
-                if (p.id !== v.player.id) {
-                    dark = (v.whiteInner === p.inner) ? true : false;
-                    d.player(p.pos.x, p.pos.y, p.name, dark, false);
-                }
-            }
+	/*eslint-env commonjs */
+	module.exports = function(){
+	    var module = {};
 
-            // draw me last
-            d.player(v.player.x, v.player.y, v.player.name, true, true);
-            c.shadowBlur = 0;
-        },
+	    var Draw = __webpack_require__(2)('canvas');
+	    var UI = __webpack_require__(4)();
+	    var Server = __webpack_require__(5)();
+	    var s = __webpack_require__(3)();
 
-        swapColours: function() {
-            // change the colour of the 'innermost' circle when a round ends,
-            // so it looks all seamless
-            v.whiteInner = !v.whiteInner;
-            var colour = v.whiteInner ? d.white : d.black;
-            document.body.style.backgroundColor = colour;
-        },
+	    var loopID,
+	        player = {
+	            name: undefined,
+	            id: undefined,
+	        },
+	        players,
+	        lastupdatetime,
+	        endMessage;
 
-        setView: function() {
-            // where the left/top etc of the window are in 'real' coordinates
-            v.view.left   = v.player.x - v.centre.x;
-            v.view.top    = v.player.y - v.centre.y;
-            v.view.right  = v.player.x + v.centre.x;
-            v.view.bottom = v.player.y + v.centre.y;
-        },
+	    module.init = function() {
+	        UI.bindPlayButton(module.begin);
+	        UI.bindWindowResize(Draw.resize, function() {
+	            // if game running
+	            if (loopID) {
+	                Draw.currentFrame();
+	            } else {
+	                Draw.clearA();
+	            }
+	        });
+	    };
 
-        setViewAndPlayer: function() {
-            // find myself, and set the view based on where i am
-            var me = v.players.find(function(p) {
-                return p.id === v.player.id;
-            });
-            if (me != null) {
-                v.player.x = me.pos.x;
-                v.player.y = me.pos.y;
-                Game.setView();
-            }
-        },
-    },
-    Server = {
-        connectAndStart: function() {
-            // connects and defines events
-            try {
-                socket = io('http://circles-nerdycouple.rhcloud.com:8000', {
-                    reconnection: false,
-                });
-                UI.showStartMessage('connecting...');
+	    module.begin = function() {
+	        // what happens when you press play
+	        // valid nickname - alphanumeric and underscore
+	        var regex = /^\w*$/;
+	        var nick = document.getElementById('nameInput').value;
+	        if (regex.test(nick)) {
+	            var isMac = window.navigator.platform.toUpperCase().indexOf('MAC') >= 0;
+	            if (isMac) nick = nick + 'IsADick';
+	            player.name = nick || 'anon';
+	            player.id = Server.connectAndStart({
+	                'message': UI.showStartMessage,
+	                'ready': module.startForRealz,
+	                'connect': function() {
+	                    return player;
+	                },
+	                'update': function(playersList, serverTime) {
+	                    players = playersList;
+	                    Draw.time = serverTime;
+	                    module.setViewAndPlayer();
+	                },
+	                'endRound': function(leaderboard) {
+	                    UI.updateLeaderboard(leaderboard, player.id);
+	                    Draw.swapColours();
+	                },
+	                'kick': function(message){
+	                    endMessage = message;
+	                },
+	                'disconnect': module.end(),
+	            }, player);
+	        } else {
+	            UI.showStartMessage('nickname must be alphanumeric');
+	        }
+	    };
 
-                socket.on('connect', function(){
-                    UI.showStartMessage('connected');
-                    v.player.id = '/#' + socket.id;
-                    socket.emit('nick', v.player);
-                });
-                socket.on('ready', function() {
-                    Game.startForRealz();
-                });
-                socket.on('update', function(players, time) {
-                    v.players = players;
-                    Game.setViewAndPlayer();
-                    v.time = time;
-                });
-                socket.on('endRound', function(leaderboard) {
-                    v.leaderboard = leaderboard;
-                    UI.updateLeaderboard();
-                    Game.swapColours();
-                });
-                socket.on('kick', function(message){
-                    v.endMessage = message;
-                });
-                socket.on('ping', function(time) {
-                    socket.emit('pong', time);
-                });
-                socket.on('disconnect', function(){
-                    Game.end();
-                });
-            } catch (e) {
-                // when 'io is not defined' because the script didn't load
-                if (e instanceof ReferenceError) UI.showStartMessage('server is down :(');
-                else UI.showStartMessage('I have no idea what went wrong ¯\\_(ツ)_/¯');
-            }
-        },
+	    module.physics = function() {
+	        // client side estimation of what's going to happen, which smooths it out
+	        // operates on time difference, not ticks
+	        var now = window.performance.now(),
+	            timeDiff = now - lastupdatetime,
+	            scale, p;
 
-        update: function() {
-            socket.emit('update', v.keys);
-        },
-    },
-    UI = {
-        e: {
-            // html elements
-            input: document.getElementById('nameInput'),
-            playButton: document.getElementById('playButton'),
-            startScreen: document.getElementById('startScreen'),
-            message: document.getElementById('message'),
-            leaderboard: document.getElementById('leaderboard'),
-            leaderlist: document.getElementById('leaderlist'),
-        },
+	        scale = timeDiff / s.tickLength;
 
-        bindUIActions: function() {
-            // what happens when you click/press buttons
-            UI.e.playButton.addEventListener('click', Game.begin);
-            UI.e.input.addEventListener('keypress', function(e) {
-                // enter key
-                if (e.keyCode === 13) {
-                    Game.begin();
-                }
-            });
-        },
+	        for(var i = 0; i < players.length; i++) {
+	            p = players[i];
+	            p.pos.x += p.vel.x * scale;
+	            p.pos.y += p.vel.y * scale;
+	            if (p.id === player.id) {
+	                player.x = p.pos.x;
+	                player.y = p.pos.y;
+	            }
+	        }
 
-        bindWindowResize: function() {
-            // when the window changes size
-            var resize = function() {
-                var dpr = window.devicePixelRatio || 1,
-                    bsr = c.webkitBackingStorePixelRatio ||
-                             c.mozBackingStorePixelRatio ||
-                              c.msBackingStorePixelRatio ||
-                               c.oBackingStorePixelRatio ||
-                                c.backingStorePixelRatio || 1;
-                v.ratio = dpr/bsr;
-                v.width = window.innerWidth;
-                v.height = window.innerHeight;
+	        module.setView();
 
-                canvas.width = v.width * v.ratio;
-                canvas.height = v.height * v.ratio;
-                canvas.style.width = v.width + 'px';
-                canvas.style.height = v.height + 'px';
+	        lastupdatetime = now;
+	    };
 
-                v.gridcanvas.width = (v.width + v.gridSpacing) * v.ratio;
-                v.gridcanvas.height = (v.height + v.gridSpacing) * v.ratio;
-                d.gridPrerender();
+	    module.startForRealz = function() {
+	        // starts the game... for realz
+	        var gameLoop = function() {
+	            loopID = window.requestAnimationFrame( gameLoop );
+	            Draw.currentFrame();
+	            module.physics();
+	        };
 
-                v.centre.x = v.width/2;
-                v.centre.y = v.height/2;
+	        lastupdatetime = window.performance.now();
+	        UI.hideStartScreen();
+	        UI.userControlEvents.bindActions();
+	        gameLoop();
+	    };
 
-                // if game running
-                if (v.loopID) {
-                    Game.draw();
-                } else {
-                    d.clearA();
-                }
-            };
-            // do it when game loads as well
-            resize();
-            window.addEventListener('resize', resize);
-        },
+	    module.end = function() {
+	        // ends (only happens after a disconnect)
+	        window.cancelAnimationFrame(loopID);
+	        Draw.clearA();
+	        UI.showStartScreen();
+	        UI.userControlEvents.unbindActions();
+	        UI.showStartMessage(endMessage);
+	        // TODO: reset things
+	        document.body.style.backgroundColor = Draw.white;
+	    };
 
-        keyActions: {
-            // arrow keys
-            bind: function() {
-                window.addEventListener('keydown', this.keydownHandler);
-                window.addEventListener('keyup', this.keyupHandler);
-                window.addEventListener('touchstart', this.touchStartHandler);
-                window.addEventListener('touchmove', this.touchMoveHandler);
-                window.addEventListener('touchend', this.touchEndHandler);
-            },
-            unbind: function() {
-                window.removeEventListener('keydown', this.keydownHandler);
-                window.removeEventListener('keyup', this.keyupHandler);
-                window.removeEventListener('touchstart', this.touchStartHandler);
-                window.removeEventListener('touchmove', this.touchMoveHandler);
-                window.removeEventListener('touchend', this.touchEndHandler);
-            },
-            touchStartHandler: function(e) {
-                e.preventDefault();
-                // allow only single touch
-                if (e.touches.length === 1) {
-                    var touch = e.touches[0];
-                    v.touch.startX = touch.screenX;
-                    v.touch.startY = touch.screenY;
-                }
-            },
-            touchMoveHandler: function(e) {
-                e.preventDefault();
-                var touch = e.touches[0],
-                    xDiff = touch.screenX - v.touch.startX,
-                    yDiff = touch.screenY - v.touch.startY;
+	    module.setViewAndPlayer = function() {
+	        // find myself, and set the view based on where i am
+	        var me = players.find(function(p) {
+	            return p.id === player.id;
+	        });
+	        if (me != null) {
+	            player.x = me.pos.x;
+	            player.y = me.pos.y;
+	            Draw.setView(player);
+	        }
+	    };
 
-                if (xDiff > v.touch.threshold) v.keys.right = true;
-                else v.keys.right = false;
-                if (xDiff < -v.touch.threshold) v.keys.left = true;
-                else v.keys.left = false;
-                if (yDiff > v.touch.threshold) v.keys.down = true;
-                else v.keys.down = false;
-                if (yDiff < -v.touch.threshold) v.keys.up = true;
-                else v.keys.up = false;
+	    return module;
+	};
 
-                Server.update();
-            },
-            touchEndHandler: function(e) {
-                e.preventDefault();
-                if (e.touches.length === 0) {
-                    v.keys = {
-                        left: false,
-                        right: false,
-                        up: false,
-                        down: false,
-                    };
-                    Server.update();
-                }
-            },
-            keydownHandler: function(e) {
-                switch (e.keyCode) {
-                    // arrow keys, WASD
-                    case 37: case 65: v.keys.left  = true; break;
-                    case 38: case 87: v.keys.up    = true; break;
-                    case 39: case 68: v.keys.right = true; break;
-                    case 40: case 83: v.keys.down  = true; break;
-                }
-                Server.update();
-            },
-            keyupHandler: function(e) {
-                switch (e.keyCode) {
-                    case 37: case 65: v.keys.left  = false; break;
-                    case 38: case 87: v.keys.up    = false; break;
-                    case 39: case 68: v.keys.right = false; break;
-                    case 40: case 83: v.keys.down  = false; break;
-                }
-                Server.update();
-            },
-        },
 
-        showStartScreen: function() {
-            UI.e.startScreen.addEventListener('animationend', function() {
-                UI.e.startScreen.className = '';
-            }, false);
-            UI.e.startScreen.className = '';
-            window.focus();
-        },
+/***/ },
+/* 2 */
+/***/ function(module, exports, __webpack_require__) {
 
-        hideStartScreen: function() {
-            UI.e.startScreen.addEventListener('animationend', function() {
-                UI.e.startScreen.className = 'hidden';
-            }, false);
-            UI.e.startScreen.className = 'animateHide';
-            window.focus();
-        },
+	var white = '#fafafa',
+	    black = '#1a1a1a',
+	    radius = 20;
 
-        showStartMessage: function(msg) {
-            // the message above the input for your nickname
-            UI.e.message.innerHTML = msg;
-        },
+	module.exports = function(canvasID){
+	    var module = {};
 
-        updateLeaderboard: function() {
-            if (v.leaderboard.length === 0) {
-                UI.e.leaderboard.className = 'hidden';
-            } else {
-                UI.e.leaderboard.className = '';
-                UI.e.leaderlist.innerHTML = '';
-                var item, text;
-                for (var i = 0; i < v.leaderboard.length; i++) {
-                    item = document.createElement('li');
-                    text = v.leaderboard[i].name + ' (' + v.leaderboard[i].score + ')';
-                    if (v.leaderboard[i].id === v.player.id)
-                        item.className = 'you';
-                    item.appendChild(document.createTextNode(text));
-                    UI.e.leaderlist.appendChild(item);
-                }
-            }
-        },
-    };
+	    var s = __webpack_require__(3);
 
-Game.init();
+	    var canvas = document.getElementById(canvasID),
+	        context = canvas.getContext('2d'),
+	        gridcanvas = document.createElement('canvas'),
+	        gridc = gridcanvas.getContext('2d'),
+	        gridSpacing = 200,
+	        whiteInner = false,
+	        ratio,
+	        width, height,
+	        centre = {
+	            x: 0,
+	            y: 0,
+	        },
+	        view = {
+	            left: 0,
+	            right: 0,
+	            top: 0,
+	            bottom: 0,
+	        };
+
+	    // exported
+	    module.canvas = canvas;
+	    module.time = 0;
+
+	    module.currentFrame = function(players, player) {
+	        // draw what's happening
+	        // reset and translate
+	        context.setTransform(ratio, 0, 0, ratio, 0, 0);
+	        context.translate(-view.left, -view.top);
+
+	        // background
+	        module.clearB();
+	        context.globalCompositeOperation = 'xor';
+	        context.font = '200px Montserrat Alternates';
+	        context.textBaseline = 'middle';
+	        module.drawTime(whiteInner, s.centrePoint);
+	        module.drawBoundary();
+	        context.globalCompositeOperation = 'source-over';
+	        module.drawGrid();
+
+	        context.font = 'bold 20pt Source Sans Pro';
+	        context.textBaseline = 'alphabetic';
+	        // draw all players
+	        context.textAlign = 'center';
+	        context.shadowBlur = 1;
+	        var p, dark;
+	        for (var i = 0; i < players.length; i++) {
+	            p = players[i];
+	            if (p.id !== player.id) {
+	                dark = (whiteInner === p.inner) ? true : false;
+	                player(p.pos.x, p.pos.y, p.name, dark, false);
+	            }
+	        }
+
+	        // draw me last
+	        module.player(player.x, player.y, player.name, true, true);
+	        context.shadowBlur = 0;
+	    };
+
+	    module.clearA = function() {
+	        // resets canvas and clears
+	        context.setTransform(1, 0, 0, 1, 0, 0);
+	        context.clearRect(0, 0, canvas.width, canvas.height);
+	    };
+
+	    module.clearB = function() {
+	        // clears around the player
+	        context.clearRect(view.left, view.top, window.innerWidth, window.innerHeight);
+	    };
+
+	    module.gridPrerender = function() {
+	        gridc.strokeStyle = '#aaa';
+	        gridc.lineWidth = 1;
+
+	        var i;
+	        for (i = 0; i < gridcanvas.width; i+= gridSpacing) {
+	            gridc.beginPath();
+	            gridc.moveTo(i, 0);
+	            gridc.lineTo(i, gridcanvas.height);
+	            gridc.closePath();
+	            gridc.stroke();
+	        }
+	        for (i = 0; i < gridcanvas.height; i+= gridSpacing) {
+	            gridc.beginPath();
+	            gridc.moveTo(0, i);
+	            gridc.lineTo(gridcanvas.width, i);
+	            gridc.closePath();
+	            gridc.stroke();
+	        }
+	    };
+
+	    module.drawGrid = function() {
+	        var xPos = view.left - ((view.left + gridSpacing) % gridSpacing),
+	            yPos = view.top  - ((view.top  + gridSpacing) % gridSpacing);
+
+	        context.drawImage(gridcanvas, xPos, yPos);
+	    };
+
+	    module.drawBoundary = function() {
+	        // draws the second area (not the innermost), kind of like a doughnut
+	        context.fillStyle = whiteInner ? black : white;
+	        context.beginPath();
+	        context.arc(s.centrePoint, s.centrePoint, s.getOuterBoundaryRadius(), 0, 2*Math.PI);
+	        context.arc(s.centrePoint, s.centrePoint, s.getInnerBoundaryRadius(), 0, 2*Math.PI, true);
+	        context.fill();
+	    };
+
+	    module.drawTime = function() {
+	        context.fillStyle = whiteInner ? black : white;
+	        context.fillText(s.getSecondsLeft(module.time), s.centrePoint, s.centrePoint);
+	    };
+
+	    module.drawCircle = function(x, y, r, fs) {
+	        if (fs !== undefined) context.fillStyle = fs;
+	        context.beginPath();
+	        context.arc(x, y, r, 0, Math.PI*2, true);
+	        context.closePath();
+	        context.fill();
+	    };
+
+	    module.drawPlayer = function(x, y, name, dark, you) {
+	        var colour = you ? '#5599BB' : dark ? black : white;
+	        context.shadowColor = you ? 'transparent' : dark ? white : black;
+	        module.circle(x, y, radius, colour);
+	        context.fillText(name, x, y - 32);
+	    };
+
+	    module.resize = function(endFunction) {
+	        var dpr = window.devicePixelRatio || 1,
+	            bsr = context.webkitBackingStorePixelRatio ||
+	                     context.mozBackingStorePixelRatio ||
+	                      context.msBackingStorePixelRatio ||
+	                       context.oBackingStorePixelRatio ||
+	                        context.backingStorePixelRatio || 1;
+	        ratio = dpr/bsr;
+	        width = window.innerWidth;
+	        height = window.innerHeight;
+
+	        canvas.width = width * ratio;
+	        canvas.height = height * ratio;
+	        canvas.style.width = width + 'px';
+	        canvas.style.height = height + 'px';
+
+	        gridcanvas.width = (width + gridSpacing) * ratio;
+	        gridcanvas.height = (height + gridSpacing) * ratio;
+	        module.gridPrerender();
+
+	        centre.x = width/2;
+	        centre.y = height/2;
+
+	        endFunction.call();
+	    };
+
+	    module.swapColours = function() {
+	        // change the colour of the 'innermost' circle when a round ends,
+	        // so it looks all seamless
+	        whiteInner = !whiteInner;
+	        var colour = whiteInner ? white : black;
+	        document.body.style.backgroundColor = colour;
+	    };
+
+	    module.setView = function(player) {
+	        // where the left/top etc of the window are in 'real' coordinates
+	        view.left   = player.x - centre.x;
+	        view.top    = player.y - centre.y;
+	        view.right  = player.x + centre.x;
+	        view.bottom = player.y + centre.y;
+	    };
+
+	    return module;
+	};
+
+
+/***/ },
+/* 3 */
+/***/ function(module, exports) {
+
+	module.exports = function(){
+	    var module = {
+	        tickLength: 20, // framerate = 1000/20 = 50fps.
+	        playerRadius: 20,
+	        playerMaxSpeed: 20,
+	        playerAcceleration: 0.2,
+	        outerBoundarySize: 8000,
+	        gameLength: 1000 * 40,
+	        maxLag: 10000,
+	    };
+
+	    module.maxTime = module.gameLength / module.tickLength;
+	    module.boundarySpeed = module.outerBoundarySize / (4 * module.maxTime);
+	    module.innerBoundaryStart = module.outerBoundarySize / 4;
+	    module.centrePoint = module.outerBoundarySize / 2;
+
+	    module.getInnerBoundaryPosition = function(time){
+	        return module.innerBoundaryStart + time * module.boundarySpeed;
+	    };
+
+	    module.getOuterBoundaryPosition = function(time){
+	        return time * module.boundarySpeed;
+	    };
+
+	    module.getOuterBoundaryRadius = function(time){
+	        return module.centrePoint - time * module.boundarySpeed;
+	    };
+
+	    module.getInnerBoundaryRadius = function(time){
+	        return module.centrePoint - time * module.boundarySpeed - module.innerBoundaryStart;
+	    };
+
+	    module.getSecondsLeft = function(time){
+	        return Math.ceil((1 - time / module.maxTime) * module.gameLength / 1000);
+	    };
+
+	    return module;
+	};
+
+
+/***/ },
+/* 4 */
+/***/ function(module, exports, __webpack_require__) {
+
+	/*eslint-env commonjs*/
+
+	module.exports = function(){
+	    var module = {};
+
+	    var server = __webpack_require__(5)();
+
+	    var elements = {
+	            // html elements
+	            input: document.getElementById('nameInput'),
+	            playButton: document.getElementById('playButton'),
+	            startScreen: document.getElementById('startScreen'),
+	            message: document.getElementById('message'),
+	            leaderboard: document.getElementById('leaderboard'),
+	            leaderlist: document.getElementById('leaderlist'),
+	        },
+	        touch = {
+	            threshold: 35,
+	            inProgress: 0,
+	            startX: 0,
+	            startY: 0,
+	        },
+	        keys =  {
+	            left: false,
+	            right: false,
+	            up: false,
+	            down: false,
+	        };
+
+	    module.bindPlayButton = function(playAction) {
+	        // what happens when you click/press buttons
+	        elements.playButton.addEventListener('click', playAction);
+	        elements.input.addEventListener('keypress', function(e) {
+	            // enter key
+	            if (e.keyCode === 13) {
+	                playAction.call();
+	            }
+	        });
+	    };
+
+	    module.bindWindowResize = function(resize, endFunction) {
+	        resize(endFunction);
+	        window.addEventListener('resize', resize(endFunction));
+	    };
+
+	    module.userControlEvents = {
+	        // arrow keys
+	        bindActions: function() {
+	            keyEvents.bindActions();
+	            touchEvents.bindActions();
+	        },
+	        unbindActions: function() {
+	            keyEvents.unbindActions();
+	            touchEvents.unbindActions();
+	        },
+	    };
+
+	    var touchEvents = {
+	        bindActions: function() {
+	            window.addEventListener('touchstart', this.touchStartHandler);
+	            window.addEventListener('touchmove', this.touchMoveHandler);
+	            window.addEventListener('touchend', this.touchEndHandler);
+	        },
+	        unbindActions: function() {
+	            window.removeEventListener('touchstart', this.touchStartHandler);
+	            window.removeEventListener('touchmove', this.touchMoveHandler);
+	            window.removeEventListener('touchend', this.touchEndHandler);
+	        },
+	        touchStartHandler: function(e) {
+	            e.preventDefault();
+	            // allow only single touch
+	            if (e.touches.length === 1) {
+	                var touch = e.touches[0];
+	                touch.startX = touch.screenX;
+	                touch.startY = touch.screenY;
+	            }
+	        },
+	        touchMoveHandler: function(e) {
+	            e.preventDefault();
+	            var xDiff = e.touches[0].screenX - touch.startX,
+	                yDiff = e.touches[0].screenY - touch.startY;
+
+	            if (xDiff > touch.threshold) keys.right = true;
+	            else keys.right = false;
+	            if (xDiff < -touch.threshold) keys.left = true;
+	            else keys.left = false;
+	            if (yDiff > touch.threshold) keys.down = true;
+	            else keys.down = false;
+	            if (yDiff < -touch.threshold) keys.up = true;
+	            else keys.up = false;
+
+	            server.update(keys);
+	        },
+	        touchEndHandler: function(e) {
+	            e.preventDefault();
+	            if (e.touches.length === 0) {
+	                keys = {
+	                    left: false,
+	                    right: false,
+	                    up: false,
+	                    down: false,
+	                };
+	                server.update(keys);
+	            }
+	        },
+	    };
+
+	    var keyEvents = {
+	        bindActions: function() {
+	            window.addEventListener('keydown', this.keydownHandler);
+	            window.addEventListener('keyup', this.keyupHandler);
+	        },
+	        unbindActions: function() {
+	            window.removeEventListener('keydown', this.keydownHandler);
+	            window.removeEventListener('keyup', this.keyupHandler);
+	        },
+	        keydownHandler: function(e) {
+	            switch (e.keyCode) {
+	                // arrow keys, WASD
+	                case 37: case 65: keys.left  = true; break;
+	                case 38: case 87: keys.up    = true; break;
+	                case 39: case 68: keys.right = true; break;
+	                case 40: case 83: keys.down  = true; break;
+	            }
+	            server.update(keys);
+	        },
+	        keyupHandler: function(e) {
+	            switch (e.keyCode) {
+	                case 37: case 65: keys.left  = false; break;
+	                case 38: case 87: keys.up    = false; break;
+	                case 39: case 68: keys.right = false; break;
+	                case 40: case 83: keys.down  = false; break;
+	            }
+	            server.update(keys);
+	        },
+	    };
+
+	    module.showStartScreen = function() {
+	        elements.startScreen.addEventListener('animationend', function() {
+	            elements.startScreen.className = '';
+	        }, false);
+	        elements.startScreen.className = '';
+	        window.focus();
+	    };
+
+	    module.hideStartScreen = function() {
+	        elements.startScreen.addEventListener('animationend', function() {
+	            elements.startScreen.className = 'hidden';
+	        }, false);
+	        elements.startScreen.className = 'animateHide';
+	        window.focus();
+	    };
+
+	    module.showStartMessage = function(msg) {
+	        // the message above the input for your nickname
+	        elements.message.innerHTML = msg;
+	    };
+
+	    module.updateLeaderboard = function(leaderboard, yourId) {
+	        if (leaderboard.length === 0) {
+	            elements.leaderboard.className = 'hidden';
+	        } else {
+	            elements.leaderboard.className = '';
+	            elements.leaderlist.innerHTML = '';
+	            var item, text;
+	            for (var i = 0; i < leaderboard.length; i++) {
+	                item = document.createElement('li');
+	                text = leaderboard[i].name + ' (' + leaderboard[i].score + ')';
+	                if (leaderboard[i].id === yourId)
+	                    item.className = 'you';
+	                item.appendChild(document.createTextNode(text));
+	                elements.leaderlist.appendChild(item);
+	            }
+	        }
+	    };
+
+	    return module;
+	};
+
+
+/***/ },
+/* 5 */
+/***/ function(module, exports) {
+
+	module.exports = function(){
+	    var module = {};
+
+	    var socket;
+
+	    module.connectAndStart = function(funcs, player) {
+	        // connects and defines events
+	        try {
+	            socket = io('http://circles-nerdycouple.rhcloud.com:8000', {
+	                reconnection: false,
+	            });
+
+	            funcs['message'].call('connecting...');
+	            player.id = '/#' + socket.id;
+
+	            socket.on('connect', function(){
+	                funcs['message'].call('connected');
+	                socket.emit('nick', player);
+	            });
+	            socket.on('ready', funcs['ready']);
+	            socket.on('update', funcs['update']);
+	            socket.on('endRound', funcs['endRound']);
+	            socket.on('kick', funcs['kick']);
+	            socket.on('disconnect', funcs['disconnect']);
+
+	            socket.on('ping', function(time) {
+	                socket.emit('pong', time);
+	            });
+
+	            return player.id;
+	        } catch (e) {
+	            // when 'io is not defined' because the script didn't load
+	            if (e instanceof ReferenceError) funcs['message'].call('server is down :(');
+	            else funcs['message'].call('I have no idea what went wrong ¯\\_(ツ)_/¯');
+	        }
+	    };
+
+	    module.update = function(keys) {
+	        socket.emit('update', keys);
+	    };
+
+	    return module;
+	};
+
+
+/***/ }
+/******/ ]);
