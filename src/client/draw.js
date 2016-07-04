@@ -47,6 +47,8 @@ module.exports = function(canvasID){
         context.textBaseline = 'middle';
         module.drawTime(whiteInner, s.centrePoint);
         module.drawBoundary();
+        module.drawExplosion();
+
         context.globalCompositeOperation = 'source-over';
         module.drawGrid();
 
@@ -120,6 +122,17 @@ module.exports = function(canvasID){
     module.drawTime = function() {
         context.fillStyle = whiteInner ? black : white;
         context.fillText(s.getSecondsLeft(time), s.centrePoint, s.centrePoint);
+    };
+
+    module.drawExplosion = function() {
+        var size = s.getExplosionRadius(time);
+        if (size <= s.getOuterBoundaryRadius(time)) {
+            context.strokeStyle = whiteInner ? black : white;
+            context.beginPath();
+            context.arc(s.centrePoint, s.centrePoint, size, 0, Math.PI*2, true);
+            context.closePath();
+            context.stroke();
+        }
     };
 
     module.drawCircle = function(x, y, r, fs) {
