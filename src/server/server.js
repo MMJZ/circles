@@ -19,22 +19,9 @@ app.get('/', function (req, res) {
 
 var io = require('socket.io')(server);
 
-// Config static variables
+// config shared variables
+var s = require('../shared.js')();
 
-var tickLength = 20; // framerate = 1000/20 = 50fps.
-var playerRadius = 20;
-var playerMaxSpeed = 20;
-var playerAcceleration = 0.2;
-var outerBoundarySize = 8000;
-var gameLength = 1000 * 40;
-var maxLag = 10000;
-
-// Deduced static variables
-
-var maxTime = gameLength / tickLength;
-var boundarySpeed = outerBoundarySize / (4 * maxTime);
-var innerBoundaryStart = outerBoundarySize / 4;
-var centrePoint = outerBoundarySize / 2;
 
 // World variables
 
@@ -44,28 +31,6 @@ var sockets = {};
 var running = false;
 var simulator;
 
-// World derived Variables
-
-function getInnerBoundaryPosition(){
-    return innerBoundaryStart + time * boundarySpeed;
-}
-
-function getOuterBoundaryPosition(){
-    return time * boundarySpeed;
-}
-
-function getOuterBoundaryRadius(){
-    return centrePoint - time * boundarySpeed;
-}
-
-function getInnerBoundaryRadius(){
-    return centrePoint - time * boundarySpeed - innerBoundaryStart;
-}
-
-function getSecondsLeft(){
-    return Math.ceil((1 - time / maxTime) * gameLength / 1000);
-}
-
 // Game Ticking
 
 function startTicking(){
@@ -74,7 +39,7 @@ function startTicking(){
     console.log('info : Starting Tick');
     simulator = setInterval(function(){
         doGameTick();
-    }, tickLength);
+    }, s.tickLength);
 }
 
 function stopTicking(){
@@ -86,39 +51,39 @@ function stopTicking(){
 function doGameTick(){
 
     time += 1;
-    if(time === maxTime) endRound();
+    if(time === s.maxTime) endRound();
     var player;
 
     // Movement
 
     for(var i = 0; i < users.length; i++){
         player = users[i];
-        if(player.keys.left) player.vel.x -= playerAcceleration;
-        if(player.keys.up) player.vel.y -= playerAcceleration;
-        if(player.keys.down) player.vel.y += playerAcceleration;
-        if(player.keys.right) player.vel.x += playerAcceleration;
+        if(player.keys.left)  player.vel.x -= s.playerAcceleration;
+        if(player.keys.up)    player.vel.y -= s.playerAcceleration;
+        if(player.keys.down)  player.vel.y += s.playerAcceleration;
+        if(player.keys.right) player.vel.x += s.playerAcceleration;
         player.vel.x *= 0.997;
         player.vel.y *= 0.997;
-        if(player.vel.x > playerMaxSpeed) player.vel.x = playerMaxSpeed;
-        if(player.vel.x < -playerMaxSpeed) player.vel.x = -playerMaxSpeed;
-        if(player.vel.y > playerMaxSpeed) player.vel.y = playerMaxSpeed;
-        if(player.vel.y < -playerMaxSpeed) player.vel.y = -playerMaxSpeed;
+        if(player.vel.x >  s.playerMaxSpeed) player.vel.x =  s.playerMaxSpeed;
+        if(player.vel.x < -s.playerMaxSpeed) player.vel.x = -s.playerMaxSpeed;
+        if(player.vel.y >  s.playerMaxSpeed) player.vel.y =  s.playerMaxSpeed;
+        if(player.vel.y < -s.playerMaxSpeed) player.vel.y = -s.playerMaxSpeed;
         player.pos.x += player.vel.x;
         player.pos.y += player.vel.y;
     }
 
     // Collisions
 
-    var outP = getOuterBoundaryPosition();
-    var inP = getInnerBoundaryPosition();
+    var outP = s.getOuterBoundaryPosition(time);
+    var inP = s.getInnerBoundaryPosition(time);
 
     for(i = 0; i < users.length; i++){
         player = users[i];
-        var dx = centrePoint - player.pos.x;
-        var dy = centrePoint - player.pos.y;
+        var dx = s.centrePoint - player.pos.x;
+        var dy = s.centrePoint - player.pos.y;
         var dx2 = sq(dx), dy2 = sq(dy);
         if(player.inner){
-            if(dx2 + dy2 > sq(centrePoint - inP + playerRadius)){
+            if(dx2 + dy2 > sq(s.centrePoint - inP + s.playerRadius)){
                 player.inner = false;
                 var nscore = countLivingPlayersAndInc();
                 player.score -= nscore;
@@ -126,9 +91,9 @@ function doGameTick(){
                 sockets[player.id].emit('dead', nscore);
             }
         }else{
-            if(dx2 + dy2 >= sq(centrePoint - outP - playerRadius)){
+            if(dx2 + dy2 >= sq(s.centrePoint - outP - s.playerRadius)){
                 var droot = Math.sqrt(dx2 + dy2);
-                if(Math.abs(droot - centrePoint + outP) > 3 * playerRadius){
+                if(Math.abs(droot - s.centrePoint + outP) > 3 * s.playerRadius){
                     player.pos = getFreePosition();
                     player.vel = {x:0,y:0};
                     continue;
@@ -143,8 +108,8 @@ function doGameTick(){
                     x: normalSpeed * normalX * 2 + tangentSpeed * tangentX * 2,
                     y: normalSpeed * normalY * 2 + tangentSpeed * tangentY * 2,
                 };
-            }else if(dx2 + dy2 < sq(centrePoint - inP + playerRadius)){
-                bashCircles(player, {pos:{x:centrePoint,y:centrePoint},vel:{x:0,y:0}});
+            }else if(dx2 + dy2 < sq(s.centrePoint - inP + s.playerRadius)){
+                bashCircles(player, {pos:{x:s.centrePoint,y:s.centrePoint},vel:{x:0,y:0}});
             }
         }
     }
@@ -236,7 +201,7 @@ io.on('connection', function(socket) {
     });
 
     socket.on('pong', function (retTime) {
-        if(retTime < getNow() - maxLag){
+        if(retTime < getNow() - s.maxLag){
             sockets[currentPlayer.id].emit('kick', 'you\'re lagging 😭 ');
             sockets[currentPlayer.id].disconnect();
         }
@@ -251,16 +216,16 @@ io.on('connection', function(socket) {
 // Circle Functions
 
 function getFreePosition(){
-    var minx = getOuterBoundaryPosition();
-    var range = outerBoundarySize - 2 * minx;
+    var minx = s.getOuterBoundaryPosition(time);
+    var range = s.outerBoundarySize - 2 * minx;
     findloop:
     while(true){
         var tx = Math.random() * range + minx;
         var ty = Math.random() * range + minx;
-        var dx2 = sq(centrePoint - tx), dy2 = sq(centrePoint - ty);
-        if(dx2 + dy2 < sq(centrePoint - getInnerBoundaryPosition() + playerRadius)) continue;
-        if(dx2 + dy2 > sq(centrePoint - getOuterBoundaryPosition() - playerRadius)) continue;
-        var recr = 2 * playerRadius;
+        var dx2 = sq(s.centrePoint - tx), dy2 = sq(s.centrePoint - ty);
+        if(dx2 + dy2 < sq(s.centrePoint - s.getInnerBoundaryPosition(time) + s.playerRadius)) continue;
+        if(dx2 + dy2 > sq(s.centrePoint - s.getOuterBoundaryPosition(time) - s.playerRadius)) continue;
+        var recr = 2 * s.playerRadius;
         var x1 = tx - recr, y1 = ty - recr, x2 = tx + recr, y2 = ty + recr;
         for(var i = 0; i < users.length; i++){
             var theirpos = users[i].pos;
@@ -272,7 +237,7 @@ function getFreePosition(){
 }
 
 function isTouching(a, b){
-    var r = playerRadius;
+    var r = s.playerRadius;
     var ax1 = a.pos.x-r, bx1 = b.pos.x-r, ay1 = a.pos.y-r, by1 = b.pos.y-r;
     var ax2 = a.pos.x+r, ay2 = b.pos.x+r, bx2 = a.pos.y+r, by2 = b.pos.y+r;
     if(ax2 < bx1 || ay2 < by1 || bx2 < ax1 || by2 < ay1) return false;
