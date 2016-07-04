@@ -47,10 +47,10 @@ module.exports = function(canvasID){
         context.textBaseline = 'middle';
         module.drawTime(whiteInner, s.centrePoint);
         module.drawBoundary();
-        module.drawExplosion();
 
         context.globalCompositeOperation = 'source-over';
         module.drawGrid();
+        module.drawExplosion();
 
         context.font = 'bold 20pt Source Sans Pro';
         context.textBaseline = 'alphabetic';
@@ -125,13 +125,19 @@ module.exports = function(canvasID){
     };
 
     module.drawExplosion = function() {
-        var size = s.getExplosionRadius(time);
-        if (size <= s.getOuterBoundaryRadius(time)) {
-            context.strokeStyle = whiteInner ? black : white;
+        var size = s.getExplosionRadius(time),
+            outer = s.getOuterBoundaryRadius(time),
+            len = 150;
+        if (size - len <= outer) {
+            var gradient = context.createRadialGradient(s.centrePoint, s.centrePoint, Math.min(size, outer), s.centrePoint, s.centrePoint, size - len);
+            gradient.addColorStop(1, 'transparent');
+            gradient.addColorStop(0, '#aaa');
+
+            context.fillStyle = gradient;
             context.beginPath();
-            context.arc(s.centrePoint, s.centrePoint, size, 0, Math.PI*2, true);
+            context.arc(s.centrePoint, s.centrePoint, Math.min(size, outer), 0, Math.PI*2, true);
             context.closePath();
-            context.stroke();
+            context.fill();
         }
     };
 

@@ -33,9 +33,9 @@ module.exports = function(){
     module.getSecondsLeft = function(time){
         return Math.ceil((1 - time / module.maxTime) * module.gameLength / 1000);
     };
-    
+
     module.getExplosionRadius = function(time){
-        return 2 * time;
+        return 12 * time;
     };
 
     return module;
