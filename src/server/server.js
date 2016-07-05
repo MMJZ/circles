@@ -139,7 +139,7 @@ function doGameTick(){
                     x: normalSpeed * normalX * 2 + tangentSpeed * tangentX * 2,
                     y: normalSpeed * normalY * 2 + tangentSpeed * tangentY * 2,
                 };
-            }else if(dx2 + dy2 < sq(s.centrePoint - inP + s.playerRadius)){
+            }else if(dx2 + dy2 < sq(inP + s.playerRadius)){
                 bashCircles(player, {pos:{x:s.centrePoint,y:s.centrePoint},vel:{x:0,y:0}});
             }
         }
