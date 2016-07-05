@@ -17,7 +17,6 @@ module.exports = function(canvasID){
         whiteInner = true,
         ratio,
         time,
-        width, height,
         view = {
             left: 0,
             right: 0,
@@ -40,7 +39,7 @@ module.exports = function(canvasID){
     module.currentFrame = function(players, player) {
         // draw what's happening
         // reset and translate
-        context.setTransform(ratio, 0, 0, ratio, 0, 0);
+        context.setTransform(ratio, 0, 0, ratio);
         context.translate(-view.left, -view.top);
 
         // background
@@ -184,22 +183,23 @@ module.exports = function(canvasID){
                      context.mozBackingStorePixelRatio ||
                       context.msBackingStorePixelRatio ||
                        context.oBackingStorePixelRatio ||
-                        context.backingStorePixelRatio || 1;
-        ratio = dpr/bsr;
-        width = window.innerWidth;
-        height = window.innerHeight;
+                        context.backingStorePixelRatio || 1,
+            w = window.innerWidth,
+            h = window.innerHeight;
 
-        canvas.width = width * ratio;
-        canvas.height = height * ratio;
-        canvas.style.width = width + 'px';
-        canvas.style.height = height + 'px';
+        ratio = dpr/bsr;
+
+        canvas.width = w * ratio;
+        canvas.height = h * ratio;
+        canvas.style.width = w + 'px';
+        canvas.style.height = h + 'px';
 
         circlesPrerender();
 
-        view.centreX = width/2;
-        view.centreY = height/2;
+        view.centreX = w/2;
+        view.centreY = h/2;
 
-        endFunction.call();
+        endFunction();
     };
 
     module.swapColours = function() {
