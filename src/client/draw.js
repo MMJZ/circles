@@ -5,6 +5,7 @@ module.exports = function(canvasID){
 
     var white = '#fafafa',
         black = '#1a1a1a',
+        playerFont = 'bold 20pt Source Sans Pro',
         radius = 20;
 
     var canvas = document.getElementById(canvasID),
@@ -42,17 +43,23 @@ module.exports = function(canvasID){
 
         // background
         clearB();
+
         context.globalCompositeOperation = 'xor';
         context.font = '200px Montserrat Alternates';
         context.textBaseline = 'middle';
         drawTime(whiteInner, s.centrePoint);
+
         drawBoundary();
 
         context.globalCompositeOperation = 'source-over';
         drawGrid();
         drawExplosion();
 
-        context.font = 'bold 20pt Source Sans Pro';
+        drawPlayers(players, player);
+    };
+
+    var drawPlayers = function(players, player) {
+        context.font = playerFont;
         context.textBaseline = 'alphabetic';
         // draw all players
         context.textAlign = 'center';
@@ -87,20 +94,16 @@ module.exports = function(canvasID){
         gridc.lineWidth = 1;
 
         var i;
+        gridc.beginPath();
         for (i = 0; i < gridcanvas.width; i+= gridSpacing) {
-            gridc.beginPath();
             gridc.moveTo(i, 0);
             gridc.lineTo(i, gridcanvas.height);
-            gridc.closePath();
-            gridc.stroke();
         }
         for (i = 0; i < gridcanvas.height; i+= gridSpacing) {
-            gridc.beginPath();
             gridc.moveTo(0, i);
             gridc.lineTo(gridcanvas.width, i);
-            gridc.closePath();
-            gridc.stroke();
         }
+        gridc.stroke();
     };
 
     var drawGrid = function() {
@@ -124,12 +127,13 @@ module.exports = function(canvasID){
         context.fillText(s.getSecondsLeft(time), s.centrePoint, s.centrePoint);
     };
 
+    var len = 150;
     var drawExplosion = function() {
         var size = s.getExplosionRadius(time),
-            outer = s.getOuterBoundaryRadius(time),
-            len = 150;
+            outer = s.getOuterBoundaryRadius(time);
         if (size - len <= outer) {
-            var gradient = context.createRadialGradient(s.centrePoint, s.centrePoint, Math.min(size, outer), s.centrePoint, s.centrePoint, size - len);
+            var gradient = context.createRadialGradient(s.centrePoint, s.centrePoint, Math.min(size, outer),
+                                                        s.centrePoint, s.centrePoint, Math.max(size - len, 0));
             gradient.addColorStop(1, 'transparent');
             gradient.addColorStop(0, '#aaa');
 
