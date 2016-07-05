@@ -86,8 +86,7 @@ function doGameTick(){
         var dy = s.centrePoint - player.pos.y;
         var dx2 = sq(dx), dy2 = sq(dy);
         if(cexp && !player.flown){
-            if(Math.abs(dx2 + dy2 - sq(exp)) < 10){
-                //TODO
+            if(Math.abs(Math.sqrt(dx2 + dy2) - exp) < 10){
                 player.flown = true;
                 var x = player.pos.x, y = player.pos.y;
                 var angle;
