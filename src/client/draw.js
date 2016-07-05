@@ -101,11 +101,12 @@ module.exports = function(canvasID){
 
         var i;
         gridc.beginPath();
-        for (i = 0; i < gridcanvas.width; i+= gridSpacing) {
+        // 0.5 leads to non-blurry lines
+        for (i = 0.5; i < gridcanvas.width; i+= gridSpacing) {
             gridc.moveTo(i, 0);
             gridc.lineTo(i, gridcanvas.height);
         }
-        for (i = 0; i < gridcanvas.height; i+= gridSpacing) {
+        for (i = 0.5; i < gridcanvas.height; i+= gridSpacing) {
             gridc.moveTo(0, i);
             gridc.lineTo(gridcanvas.width, i);
         }
