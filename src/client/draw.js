@@ -37,6 +37,9 @@ module.exports = function(canvasID){
     module.setTime = function(newTime) {
         time = newTime;
     };
+    module.incTime = function(timeDiff) {
+        time += timeDiff;
+    };
 
     module.currentFrame = function(players, player) {
         // draw what's happening
