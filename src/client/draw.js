@@ -39,7 +39,7 @@ module.exports = function(canvasID){
     module.currentFrame = function(players, player) {
         // draw what's happening
         // reset and translate
-        context.setTransform(ratio, 0, 0, ratio);
+        context.setTransform(ratio, 0, 0, ratio, 0, 0);
         context.translate(-view.left, -view.top);
 
         // background
