@@ -124,6 +124,7 @@ module.exports = function(){
         lastupdatetime = window.performance.now();
         UI.hideStartScreen();
         UI.userControlEvents.bindActions(module.server.update);
+        Draw.showMe(player);
         gameLoop();
     };
 
@@ -131,6 +132,7 @@ module.exports = function(){
         // ends (only happens after a disconnect)
         window.cancelAnimationFrame(loopID);
         Draw.clearA();
+        Draw.hideMe(player);
         UI.showStartScreen();
         UI.userControlEvents.unbindActions();
         UI.showStartMessage(endMessage);

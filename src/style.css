@@ -16,6 +16,41 @@ canvas {
     z-index: -1;
 }
 
+#me > div {
+    width: 40px;
+    height: 40px;
+    border-radius: 20px;
+    background-color: #5599BB;
+    margin: auto;
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+}
+
+#me.hidden {
+    display: none;
+}
+
+#myName {
+    color: #5599BB;
+    padding: 0;
+    margin: 0;
+}
+
+#me {
+    height: 100px;
+    text-align: center;
+
+    margin: auto;
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+}
+
 #startHolder {
     text-align: center;
     position: absolute;
