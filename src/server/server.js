@@ -90,8 +90,8 @@ function doGameTick(){
                 player.flown = true;
                 var x = player.pos.x, y = player.pos.y;
                 var angle;
-                if(x >= 0){
-                    if(y >= 0){
+                if(x >= s.centrePoint){
+                    if(y >= s.centrePoint){
                         angle = Math.atan(y/x);
                         player.vel.x += pushFac * Math.cos(angle);
                         player.vel.y += pushFac * Math.sin(angle);
@@ -101,7 +101,7 @@ function doGameTick(){
                         player.vel.y -= pushFac * Math.sin(angle);
                     }
                 }else{
-                    if(y >= 0){
+                    if(y >= s.centrePoint){
                         angle = Math.atan(-y/x);
                         player.vel.x -= pushFac * Math.cos(angle);
                         player.vel.y += pushFac * Math.sin(angle);
@@ -271,9 +271,10 @@ function getFreePosition(){
 
 function isTouching(a, b){
     var r = s.playerRadius;
-    var ax1 = a.pos.x-r, bx1 = b.pos.x-r, ay1 = a.pos.y-r, by1 = b.pos.y-r;
-    var ax2 = a.pos.x+r, ay2 = b.pos.x+r, bx2 = a.pos.y+r, by2 = b.pos.y+r;
-    if(ax2 < bx1 || ay2 < by1 || bx2 < ax1 || by2 < ay1) return false;
+    if(a.pos.x + r < b.pos.x - r) return false;
+    if(a.pos.y + r < b.pos.y - r) return false;
+    if(a.pos.x - r > b.pos.x + r) return false;
+    if(a.pos.y - r > b.pos.y + r) return false;
     return sq(b.pos.x - a.pos.x) + sq(b.pos.y - a.pos.y) < sq(r + r);
 }
 
