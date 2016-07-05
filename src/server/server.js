@@ -88,10 +88,10 @@ function doGameTick(){
         if(cexp && !player.flown){
             if(Math.abs(Math.sqrt(dx2 + dy2) - exp) < 10){
                 player.flown = true;
-                var x = player.pos.x, y = player.pos.y;
+                var x = player.pos.x - s.centrePoint, y = player.pos.y - s.centrePoint;
                 var angle;
                 if(x >= s.centrePoint){
-                    if(y >= s.centrePoint){
+                    if(y >= 0){
                         angle = Math.atan(y/x);
                         player.vel.x += pushFac * Math.cos(angle);
                         player.vel.y += pushFac * Math.sin(angle);
@@ -101,7 +101,7 @@ function doGameTick(){
                         player.vel.y -= pushFac * Math.sin(angle);
                     }
                 }else{
-                    if(y >= s.centrePoint){
+                    if(y >= 0){
                         angle = Math.atan(-y/x);
                         player.vel.x -= pushFac * Math.cos(angle);
                         player.vel.y += pushFac * Math.sin(angle);
