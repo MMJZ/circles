@@ -41,16 +41,16 @@ module.exports = function(canvasID){
         context.translate(-view.left, -view.top);
 
         // background
-        module.clearB();
+        clearB();
         context.globalCompositeOperation = 'xor';
         context.font = '200px Montserrat Alternates';
         context.textBaseline = 'middle';
-        module.drawTime(whiteInner, s.centrePoint);
-        module.drawBoundary();
+        drawTime(whiteInner, s.centrePoint);
+        drawBoundary();
 
         context.globalCompositeOperation = 'source-over';
-        module.drawGrid();
-        module.drawExplosion();
+        drawGrid();
+        drawExplosion();
 
         context.font = 'bold 20pt Source Sans Pro';
         context.textBaseline = 'alphabetic';
@@ -62,12 +62,12 @@ module.exports = function(canvasID){
             p = players[i];
             if (p.id !== player.id) {
                 dark = (whiteInner === p.inner) ? true : false;
-                module.drawPlayer(p.pos.x, p.pos.y, p.name, dark, false);
+                drawPlayer(p.pos.x, p.pos.y, p.name, dark, false);
             }
         }
 
         // draw me last
-        module.drawPlayer(player.x, player.y, player.name, true, true);
+        drawPlayer(player.x, player.y, player.name, true, true);
         context.shadowBlur = 0;
     };
 
@@ -77,12 +77,12 @@ module.exports = function(canvasID){
         context.clearRect(0, 0, canvas.width, canvas.height);
     };
 
-    module.clearB = function() {
+    var clearB = function() {
         // clears around the player
         context.clearRect(view.left, view.top, window.innerWidth, window.innerHeight);
     };
 
-    module.gridPrerender = function() {
+    var gridPrerender = function() {
         gridc.strokeStyle = '#aaa';
         gridc.lineWidth = 1;
 
@@ -103,14 +103,14 @@ module.exports = function(canvasID){
         }
     };
 
-    module.drawGrid = function() {
+    var drawGrid = function() {
         var xPos = view.left - ((view.left + gridSpacing) % gridSpacing),
             yPos = view.top  - ((view.top  + gridSpacing) % gridSpacing);
 
         context.drawImage(gridcanvas, xPos, yPos);
     };
 
-    module.drawBoundary = function() {
+    var drawBoundary = function() {
         // draws the second area (not the innermost), kind of like a doughnut
         context.fillStyle = whiteInner ? black : white;
         context.beginPath();
@@ -119,12 +119,12 @@ module.exports = function(canvasID){
         context.fill();
     };
 
-    module.drawTime = function() {
+    var drawTime = function() {
         context.fillStyle = whiteInner ? black : white;
         context.fillText(s.getSecondsLeft(time), s.centrePoint, s.centrePoint);
     };
 
-    module.drawExplosion = function() {
+    var drawExplosion = function() {
         var size = s.getExplosionRadius(time),
             outer = s.getOuterBoundaryRadius(time),
             len = 150;
@@ -141,7 +141,7 @@ module.exports = function(canvasID){
         }
     };
 
-    module.drawCircle = function(x, y, r, fs) {
+    var drawCircle = function(x, y, r, fs) {
         if (fs !== undefined) context.fillStyle = fs;
         context.beginPath();
         context.arc(x, y, r, 0, Math.PI*2, true);
@@ -149,7 +149,7 @@ module.exports = function(canvasID){
         context.fill();
     };
 
-    module.drawPlayer = function(x, y, name, dark, you) {
+    var drawPlayer = function(x, y, name, dark, you) {
         var colour = you ? '#5599BB' : dark ? black : white;
         context.shadowColor = you ? 'transparent' : dark ? white : black;
         module.drawCircle(x, y, radius, colour);
@@ -174,7 +174,7 @@ module.exports = function(canvasID){
 
         gridcanvas.width = (width + gridSpacing) * ratio;
         gridcanvas.height = (height + gridSpacing) * ratio;
-        module.gridPrerender();
+        gridPrerender();
 
         centre.x = width/2;
         centre.y = height/2;
