@@ -22,6 +22,7 @@ var io = require('socket.io')(server);
 // config shared variables
 var s = require('../shared.js')();
 
+var pushFac = 10;
 
 // World variables
 
@@ -73,17 +74,48 @@ function doGameTick(){
     }
 
     // Collisions
-
-    var outP = s.getOuterBoundaryPosition(time);
-    var inP = s.getInnerBoundaryPosition(time);
+    
+    var outP = s.getOuterBoundaryRadius(time);
+    var inP = s.getInnerBoundaryRadius(time);
+    var exp = s.getExplosionRadius(time);
+    var cexp = exp < outP;
 
     for(i = 0; i < users.length; i++){
         player = users[i];
         var dx = s.centrePoint - player.pos.x;
         var dy = s.centrePoint - player.pos.y;
         var dx2 = sq(dx), dy2 = sq(dy);
+        if(cexp && !player.flown){
+            if(Math.abs(dx2 + dy2 - sq(exp)) < 10){
+                //TODO
+                player.flown = true;
+                var x = player.pos.x, y = player.pos.y;
+                var angle;
+                if(x >= 0){
+                    if(y >= 0){
+                        angle = Math.atan(y/x);
+                        player.vel.x += pushFac * Math.cos(angle);
+                        player.vel.y += pushFac * Math.sin(angle);
+                    }else{
+                        angle = Math.atan(-y/x);
+                        player.vel.x += pushFac * Math.cos(angle);
+                        player.vel.y -= pushFac * Math.sin(angle);
+                    }
+                }else{
+                    if(y >= 0){
+                        angle = Math.atan(-y/x);
+                        player.vel.x -= pushFac * Math.cos(angle);
+                        player.vel.y += pushFac * Math.sin(angle);
+                    }else{
+                        angle = Math.atan(y/x);
+                        player.vel.x -= pushFac * Math.cos(angle);
+                        player.vel.y -= pushFac * Math.sin(angle);
+                    }
+                }
+            }
+        }
         if(player.inner){
-            if(dx2 + dy2 > sq(s.centrePoint - inP + s.playerRadius)){
+            if(dx2 + dy2 > sq(inP + s.playerRadius)){
                 player.inner = false;
                 var nscore = countLivingPlayersAndInc();
                 player.score -= nscore;
@@ -91,9 +123,9 @@ function doGameTick(){
                 sockets[player.id].emit('dead', nscore);
             }
         }else{
-            if(dx2 + dy2 >= sq(s.centrePoint - outP - s.playerRadius)){
+            if(dx2 + dy2 >= sq(outP - s.playerRadius)){
                 var droot = Math.sqrt(dx2 + dy2);
-                if(Math.abs(droot - s.centrePoint + outP) > 3 * s.playerRadius){
+                if(Math.abs(droot - outP) > 3 * s.playerRadius){
                     player.pos = getFreePosition();
                     player.vel = {x:0,y:0};
                     continue;
@@ -136,6 +168,7 @@ function endRound(){
     for(var i = 0; i < users.length; i++){
         if(users[i].inner) users[i].score += users.length - 1;
         else users[i].inner = true;
+        users[i].flown = false;
     }
     users.sort(function(a, b) { return b.score - a.score; });
     var leaderboard = [];
@@ -184,6 +217,7 @@ io.on('connection', function(socket) {
                     down: false,
                 },
                 inner: false,
+                flown: false,
                 score: 0,
                 lastUpdate: getNow(),
             };
