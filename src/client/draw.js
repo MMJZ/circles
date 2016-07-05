@@ -136,16 +136,19 @@ module.exports = function(canvasID){
     var len = 150;
     var drawExplosion = function() {
         var size = s.getExplosionRadius(time),
-            outer = s.getOuterBoundaryRadius(time);
-        if (size - len <= outer) {
-            var gradient = context.createRadialGradient(s.centrePoint, s.centrePoint, Math.min(size, outer),
-                                                        s.centrePoint, s.centrePoint, Math.max(size - len, 0));
+            outer = s.getOuterBoundaryRadius(time),
+            inRadius = Math.max(size - len, 0),
+            outRadius = Math.min(size, outer);
+        if (inRadius <= outer) {
+            var gradient = context.createRadialGradient(s.centrePoint, s.centrePoint, outRadius,
+                                                        s.centrePoint, s.centrePoint, inRadius);
             gradient.addColorStop(1, 'transparent');
             gradient.addColorStop(0, '#aaa');
 
             context.fillStyle = gradient;
             context.beginPath();
-            context.arc(s.centrePoint, s.centrePoint, Math.min(size, outer), 0, Math.PI*2, true);
+            context.arc(s.centrePoint, s.centrePoint, outRadius, 0, Math.PI*2, true);
+            context.arc(s.centrePoint, s.centrePoint, inRadius, 0, Math.PI*2, false);
             context.closePath();
             context.fill();
         }
