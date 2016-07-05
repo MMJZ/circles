@@ -3,32 +3,28 @@ module.exports = function(canvasID){
 
     var s = require('../shared.js')();
 
+    // statics
     var white = '#fafafa',
         black = '#1a1a1a',
         blue = '#5599BB',
         playerFont = 'bold 20pt Source Sans Pro',
-        radius = 20;
+        gridSpacing = 200;
 
     var canvas = document.getElementById(canvasID),
         context = canvas.getContext('2d'),
-        gridcanvas = document.createElement('canvas'),
-        gridc = gridcanvas.getContext('2d'),
         circlesCanvas = document.createElement('canvas'),
         circlesC = circlesCanvas.getContext('2d'),
-        gridSpacing = 200,
         whiteInner = true,
         ratio,
         time,
         width, height,
-        centre = {
-            x: 0,
-            y: 0,
-        },
         view = {
             left: 0,
             right: 0,
             top: 0,
             bottom: 0,
+            centreX: 0,
+            centreY: 0,
         };
 
     // exported
@@ -36,6 +32,9 @@ module.exports = function(canvasID){
 
     module.setTime = function(newTime) {
         time = newTime;
+    };
+    module.incTime = function(timeDiff) {
+        time += timeDiff;
     };
 
     module.currentFrame = function(players, player) {
@@ -92,28 +91,28 @@ module.exports = function(canvasID){
         context.clearRect(view.left, view.top, window.innerWidth, window.innerHeight);
     };
 
-    var gridPrerender = function() {
-        gridc.strokeStyle = '#aaa';
-        gridc.lineWidth = 1;
+    var drawGrid = function() {
+        var xPos = view.left - ((view.left + gridSpacing + 0.5) % gridSpacing),
+            yPos = view.top  - ((view.top  + gridSpacing + 0.5) % gridSpacing);
+
+        // 0.5 leads to non-blurry lines
+        xPos = (xPos | 0) + 0.5;
+        yPos = (yPos | 0) + 0.5;
+
+        context.strokeStyle = '#aaa';
+        context.lineWidth = 1;
 
         var i;
-        gridc.beginPath();
-        for (i = 0; i < gridcanvas.width; i+= gridSpacing) {
-            gridc.moveTo(i, 0);
-            gridc.lineTo(i, gridcanvas.height);
+        context.beginPath();
+        for (i = xPos; i < view.right; i+= gridSpacing) {
+            context.moveTo(i, view.top);
+            context.lineTo(i, view.bottom);
         }
-        for (i = 0; i < gridcanvas.height; i+= gridSpacing) {
-            gridc.moveTo(0, i);
-            gridc.lineTo(gridcanvas.width, i);
+        for (i = yPos; i < view.bottom; i+= gridSpacing) {
+            context.moveTo(view.left, i);
+            context.lineTo(view.right, i);
         }
-        gridc.stroke();
-    };
-
-    var drawGrid = function() {
-        var xPos = view.left - ((view.left + gridSpacing) % gridSpacing),
-            yPos = view.top  - ((view.top  + gridSpacing) % gridSpacing);
-
-        context.drawImage(gridcanvas, xPos, yPos);
+        context.stroke();
     };
 
     var drawBoundary = function() {
@@ -133,16 +132,19 @@ module.exports = function(canvasID){
     var len = 150;
     var drawExplosion = function() {
         var size = s.getExplosionRadius(time),
-            outer = s.getOuterBoundaryRadius(time);
-        if (size - len <= outer) {
-            var gradient = context.createRadialGradient(s.centrePoint, s.centrePoint, Math.min(size, outer),
-                                                        s.centrePoint, s.centrePoint, Math.max(size - len, 0));
+            outer = s.getOuterBoundaryRadius(time),
+            inRadius = Math.max(size - len, 0),
+            outRadius = Math.min(size, outer);
+        if (inRadius <= outer) {
+            var gradient = context.createRadialGradient(s.centrePoint, s.centrePoint, outRadius,
+                                                        s.centrePoint, s.centrePoint, inRadius);
             gradient.addColorStop(1, 'transparent');
             gradient.addColorStop(0, '#aaa');
 
             context.fillStyle = gradient;
             context.beginPath();
-            context.arc(s.centrePoint, s.centrePoint, Math.min(size, outer), 0, Math.PI*2, true);
+            context.arc(s.centrePoint, s.centrePoint, outRadius, 0, Math.PI*2, true);
+            context.arc(s.centrePoint, s.centrePoint, inRadius, 0, Math.PI*2, false);
             context.closePath();
             context.fill();
         }
@@ -192,13 +194,10 @@ module.exports = function(canvasID){
         canvas.style.width = width + 'px';
         canvas.style.height = height + 'px';
 
-        gridcanvas.width = (width + gridSpacing) * ratio;
-        gridcanvas.height = (height + gridSpacing) * ratio;
-        gridPrerender();
         circlesPrerender();
 
-        centre.x = width/2;
-        centre.y = height/2;
+        view.centreX = width/2;
+        view.centreY = height/2;
 
         endFunction.call();
     };
@@ -213,10 +212,10 @@ module.exports = function(canvasID){
 
     module.setView = function(player) {
         // where the left/top etc of the window are in 'real' coordinates
-        view.left   = player.x - centre.x;
-        view.top    = player.y - centre.y;
-        view.right  = player.x + centre.x;
-        view.bottom = player.y + centre.y;
+        view.left   = player.x - view.centreX;
+        view.top    = player.y - view.centreY;
+        view.right  = player.x + view.centreX;
+        view.bottom = player.y + view.centreY;
     };
 
     return module;

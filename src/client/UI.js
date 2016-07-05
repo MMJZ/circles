@@ -118,15 +118,16 @@ module.exports = function(){
             window.removeEventListener('keyup', this.keyupHandler);
         },
         keydownHandler: function(e) {
-            switch (e.keyCode) {
-                // arrow keys, WASD
-                case 37: case 65: keys.left  = true; break;
-                case 38: case 87: keys.up    = true; break;
-                case 39: case 68: keys.right = true; break;
-                case 40: case 83: keys.down  = true; break;
+            if(!e.repeat) {
+                switch (e.keyCode) {
+                    // arrow keys, WASD
+                    case 37: case 65: keys.left  = true; break;
+                    case 38: case 87: keys.up    = true; break;
+                    case 39: case 68: keys.right = true; break;
+                    case 40: case 83: keys.down  = true; break;
+                }
+                serverUpdate(keys);
             }
-
-            serverUpdate(keys);
         },
         keyupHandler: function(e) {
             switch (e.keyCode) {

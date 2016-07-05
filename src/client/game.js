@@ -108,6 +108,7 @@ module.exports = function(){
         }
 
         Draw.setView(player);
+        Draw.incTime(scale);
 
         lastupdatetime = now;
     };
