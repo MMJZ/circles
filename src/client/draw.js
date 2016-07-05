@@ -5,6 +5,7 @@ module.exports = function(canvasID){
 
     var white = '#fafafa',
         black = '#1a1a1a',
+        blue = '#5599BB',
         playerFont = 'bold 20pt Source Sans Pro',
         radius = 20;
 
@@ -12,6 +13,8 @@ module.exports = function(canvasID){
         context = canvas.getContext('2d'),
         gridcanvas = document.createElement('canvas'),
         gridc = gridcanvas.getContext('2d'),
+        circlesCanvas = document.createElement('canvas'),
+        circlesC = circlesCanvas.getContext('2d'),
         gridSpacing = 200,
         whiteInner = true,
         ratio,
@@ -146,17 +149,30 @@ module.exports = function(canvasID){
     };
 
     var drawCircle = function(x, y, r, fs) {
-        if (fs !== undefined) context.fillStyle = fs;
-        context.beginPath();
-        context.arc(x, y, r, 0, Math.PI*2, true);
-        context.closePath();
-        context.fill();
+        if (fs !== undefined) circlesC.fillStyle = fs;
+        circlesC.beginPath();
+        circlesC.arc(x, y, r, 0, Math.PI*2, true);
+        circlesC.closePath();
+        circlesC.fill();
+    };
+
+    var rad = s.playerRadius + 1;
+    var circlesPrerender = function() {
+        circlesCanvas.width = rad * 6 * ratio;
+        circlesCanvas.height = rad * 2 * ratio;
+
+        drawCircle(rad, rad, rad - 1, black);
+        drawCircle(3*rad, rad, rad - 1, white);
+        drawCircle(5*rad, rad, rad - 1, blue);
     };
 
     var drawPlayer = function(x, y, name, dark, you) {
-        var colour = you ? '#5599BB' : dark ? black : white;
+        var pos = you ? 4*rad : dark ? 0 : 2*rad;
+        context.drawImage(circlesCanvas, pos, 0, rad*2, rad*2,
+                          x - rad, y - rad, rad*2, rad*2);
+
+        context.fillStyle = you ? blue : dark ? black : white;
         context.shadowColor = you ? 'transparent' : dark ? white : black;
-        module.drawCircle(x, y, radius, colour);
         context.fillText(name, x, y - 32);
     };
 
@@ -179,6 +195,7 @@ module.exports = function(canvasID){
         gridcanvas.width = (width + gridSpacing) * ratio;
         gridcanvas.height = (height + gridSpacing) * ratio;
         gridPrerender();
+        circlesPrerender();
 
         centre.x = width/2;
         centre.y = height/2;
