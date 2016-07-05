@@ -12,8 +12,6 @@ module.exports = function(canvasID){
 
     var canvas = document.getElementById(canvasID),
         context = canvas.getContext('2d'),
-        gridcanvas = document.createElement('canvas'),
-        gridc = gridcanvas.getContext('2d'),
         circlesCanvas = document.createElement('canvas'),
         circlesC = circlesCanvas.getContext('2d'),
         whiteInner = true,
@@ -93,29 +91,28 @@ module.exports = function(canvasID){
         context.clearRect(view.left, view.top, window.innerWidth, window.innerHeight);
     };
 
-    var gridPrerender = function() {
-        gridc.strokeStyle = '#aaa';
-        gridc.lineWidth = 1;
+    var drawGrid = function() {
+        var xPos = view.left - ((view.left + gridSpacing + 0.5) % gridSpacing),
+            yPos = view.top  - ((view.top  + gridSpacing + 0.5) % gridSpacing);
+
+        // 0.5 leads to non-blurry lines
+        xPos = (xPos | 0) + 0.5;
+        yPos = (yPos | 0) + 0.5;
+
+        context.strokeStyle = '#aaa';
+        context.lineWidth = 1;
 
         var i;
-        gridc.beginPath();
-        // 0.5 leads to non-blurry lines
-        for (i = 0.5; i < gridcanvas.width; i+= gridSpacing) {
-            gridc.moveTo(i, 0);
-            gridc.lineTo(i, gridcanvas.height);
+        context.beginPath();
+        for (i = xPos; i < view.right; i+= gridSpacing) {
+            context.moveTo(i, view.top);
+            context.lineTo(i, view.bottom);
         }
-        for (i = 0.5; i < gridcanvas.height; i+= gridSpacing) {
-            gridc.moveTo(0, i);
-            gridc.lineTo(gridcanvas.width, i);
+        for (i = yPos; i < view.bottom; i+= gridSpacing) {
+            context.moveTo(view.left, i);
+            context.lineTo(view.right, i);
         }
-        gridc.stroke();
-    };
-
-    var drawGrid = function() {
-        var xPos = view.left - ((view.left + gridSpacing) % gridSpacing),
-            yPos = view.top  - ((view.top  + gridSpacing) % gridSpacing);
-
-        context.drawImage(gridcanvas, xPos, yPos);
+        context.stroke();
     };
 
     var drawBoundary = function() {
@@ -197,9 +194,6 @@ module.exports = function(canvasID){
         canvas.style.width = width + 'px';
         canvas.style.height = height + 'px';
 
-        gridcanvas.width = (width + gridSpacing) * ratio;
-        gridcanvas.height = (height + gridSpacing) * ratio;
-        gridPrerender();
         circlesPrerender();
 
         view.centreX = width/2;
