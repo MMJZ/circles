@@ -3,11 +3,12 @@ module.exports = function(canvasID){
 
     var s = require('../shared.js')();
 
+    // statics
     var white = '#fafafa',
         black = '#1a1a1a',
         blue = '#5599BB',
         playerFont = 'bold 20pt Source Sans Pro',
-        radius = 20;
+        gridSpacing = 200;
 
     var canvas = document.getElementById(canvasID),
         context = canvas.getContext('2d'),
@@ -15,20 +16,17 @@ module.exports = function(canvasID){
         gridc = gridcanvas.getContext('2d'),
         circlesCanvas = document.createElement('canvas'),
         circlesC = circlesCanvas.getContext('2d'),
-        gridSpacing = 200,
         whiteInner = true,
         ratio,
         time,
         width, height,
-        centre = {
-            x: 0,
-            y: 0,
-        },
         view = {
             left: 0,
             right: 0,
             top: 0,
             bottom: 0,
+            centreX: 0,
+            centreY: 0,
         };
 
     // exported
@@ -204,8 +202,8 @@ module.exports = function(canvasID){
         gridPrerender();
         circlesPrerender();
 
-        centre.x = width/2;
-        centre.y = height/2;
+        view.centreX = width/2;
+        view.centreY = height/2;
 
         endFunction.call();
     };
@@ -220,10 +218,10 @@ module.exports = function(canvasID){
 
     module.setView = function(player) {
         // where the left/top etc of the window are in 'real' coordinates
-        view.left   = player.x - centre.x;
-        view.top    = player.y - centre.y;
-        view.right  = player.x + centre.x;
-        view.bottom = player.y + centre.y;
+        view.left   = player.x - view.centreX;
+        view.top    = player.y - view.centreY;
+        view.right  = player.x + view.centreX;
+        view.bottom = player.y + view.centreY;
     };
 
     return module;
