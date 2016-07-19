@@ -7,6 +7,7 @@ module.exports = function(canvasID){
     var white = '#fafafa',
         black = '#1a1a1a',
         playerFont = 'bold 20pt Source Sans Pro',
+        timeFont = '200px Montserrat Alternates',
         gridSpacing = 200;
 
     var canvas = document.getElementById(canvasID),
@@ -35,6 +36,14 @@ module.exports = function(canvasID){
         time += timeDiff;
     };
 
+    module.reset = function() {
+        // resets canvas and clears
+        context.setTransform(1, 0, 0, 1, 0, 0);
+        context.clearRect(0, 0, canvas.width, canvas.height);
+        document.body.style.backgroundColor = white;
+        module.hideMe();
+    };
+
     module.currentFrame = function(players, player) {
         // draw what's happening
         // reset and translate
@@ -42,11 +51,11 @@ module.exports = function(canvasID){
         context.translate(-view.left, -view.top);
 
         // background
-        clearB();
+        clear();
 
         context.globalCompositeOperation = 'xor';
         context.textAlign = 'center';
-        context.font = '200px Montserrat Alternates';
+        context.font = timeFont;
         context.textBaseline = 'middle';
         drawTime(whiteInner, s.centrePoint);
 
@@ -73,13 +82,7 @@ module.exports = function(canvasID){
         }
     };
 
-    module.clearA = function() {
-        // resets canvas and clears
-        context.setTransform(1, 0, 0, 1, 0, 0);
-        context.clearRect(0, 0, canvas.width, canvas.height);
-    };
-
-    var clearB = function() {
+    var clear = function() {
         // clears around the player
         context.clearRect(view.left, view.top, window.innerWidth, window.innerHeight);
     };
@@ -122,11 +125,12 @@ module.exports = function(canvasID){
         context.fillText(s.getSecondsLeft(time), s.centrePoint, s.centrePoint);
     };
 
-    var len = 150;
+    var explosionWidth = 150;
     var drawExplosion = function() {
         var size = s.getExplosionRadius(time),
             outer = s.getOuterBoundaryRadius(time),
-            inRadius = Math.max(size - len, 0),
+            // size of inner and outer boundaries of the explosion
+            inRadius = Math.max(size - explosionWidth, 0),
             outRadius = Math.min(size, outer);
         if (inRadius <= outer) {
             var gradient = context.createRadialGradient(s.centrePoint, s.centrePoint, outRadius,
@@ -196,6 +200,7 @@ module.exports = function(canvasID){
             w = window.innerWidth,
             h = window.innerHeight;
 
+        // ratio is used for high dpi like retina screens
         ratio = dpr/bsr;
 
         canvas.width = w * ratio;

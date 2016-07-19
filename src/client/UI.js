@@ -141,6 +141,19 @@ module.exports = function(){
         },
     };
 
+    module.setup = function(action) {
+        module.hideStartScreen();
+        module.userControlEvents.bindActions(action);
+    };
+
+    module.reset = function(endMessage) {
+        module.showStartScreen();
+        module.userControlEvents.unbindActions();
+        if (endMessage != null) {
+            module.showStartMessage(endMessage);
+        }
+    };
+
     module.showStartScreen = function() {
         elements.startScreen.addEventListener('animationend', function() {
             elements.startScreen.className = '';
