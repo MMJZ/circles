@@ -6,43 +6,39 @@ module.exports = function(){
     var UI = require('./UI.js')();
     var s = require('../shared.js')();
 
-    var loopID,
+    var gameLoopID,
         player = {
             name: undefined,
             id: undefined,
         },
         players = [],
+        socket,
         lastupdatetime,
-        endMessage;
+        endMessage = '';
 
     module.init = function() {
-        UI.bindPlayButton(module.begin);
+        UI.bindPlayButton(module.play);
         UI.bindWindowResize(Draw.resize, function() {
             // if game running
-            if (loopID) {
+            if (gameLoopID) {
                 Draw.currentFrame(players, player);
             } else {
-                Draw.clearA();
+                Draw.reset();
             }
         });
     };
 
-    module.begin = function() {
-        // what happens when you press play
-        // valid nickname - alphanumeric and underscore
+    module.play = function() {
         var regex = /^\w*$/;
         var nick = document.getElementById('nameInput').value;
         if (regex.test(nick)) {
-            var isMac = window.navigator.platform.toUpperCase().indexOf('MAC') >= 0;
-            if (isMac) nick = nick + 'IsADick';
             player.name = nick || 'anon';
             module.server.connect();
         } else {
-            UI.showStartMessage('nickname must be alphanumeric');
+            UI.showStartMessage('nickname can only have numbers and letters');
         }
     };
 
-    var socket;
     module.server = {
         connect: function() {
             try {
@@ -57,7 +53,7 @@ module.exports = function(){
                     socket.emit('nick', player);
                 });
                 socket.on('ready', function() {
-                    module.startForRealz();
+                    module.start();
                 });
                 socket.on('update', function(playerList, serverTime) {
                     players = playerList;
@@ -113,29 +109,25 @@ module.exports = function(){
         lastupdatetime = now;
     };
 
-    module.startForRealz = function() {
-        // starts the game... for realz
+    module.start = function() {
         var gameLoop = function() {
-            loopID = window.requestAnimationFrame( gameLoop );
             Draw.currentFrame(players, player);
             module.physics();
+            setTimeout( function() {
+                gameLoopID = window.requestAnimationFrame( gameLoop );
+            }, 0);
         };
 
+        UI.setup(module.server.update);
         lastupdatetime = window.performance.now();
-        UI.hideStartScreen();
-        UI.userControlEvents.bindActions(module.server.update);
+        Draw.showMe(player);
         gameLoop();
     };
 
     module.end = function() {
-        // ends (only happens after a disconnect)
-        window.cancelAnimationFrame(loopID);
-        Draw.clearA();
-        UI.showStartScreen();
-        UI.userControlEvents.unbindActions();
-        UI.showStartMessage(endMessage);
-        // TODO: reset things
-        document.body.style.backgroundColor = Draw.white;
+        window.cancelAnimationFrame(gameLoopID);
+        Draw.reset();
+        UI.reset(endMessage);
     };
 
     module.setViewAndPlayer = function() {

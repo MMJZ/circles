@@ -6,8 +6,8 @@ module.exports = function(canvasID){
     // statics
     var white = '#fafafa',
         black = '#1a1a1a',
-        blue = '#5599BB',
         playerFont = 'bold 20pt Source Sans Pro',
+        timeFont = '200px Montserrat Alternates',
         gridSpacing = 200;
 
     var canvas = document.getElementById(canvasID),
@@ -17,7 +17,6 @@ module.exports = function(canvasID){
         whiteInner = true,
         ratio,
         time,
-        width, height,
         view = {
             left: 0,
             right: 0,
@@ -37,6 +36,14 @@ module.exports = function(canvasID){
         time += timeDiff;
     };
 
+    module.reset = function() {
+        // resets canvas and clears
+        context.setTransform(1, 0, 0, 1, 0, 0);
+        context.clearRect(0, 0, canvas.width, canvas.height);
+        document.body.style.backgroundColor = white;
+        module.hideMe();
+    };
+
     module.currentFrame = function(players, player) {
         // draw what's happening
         // reset and translate
@@ -44,10 +51,11 @@ module.exports = function(canvasID){
         context.translate(-view.left, -view.top);
 
         // background
-        clearB();
+        clear();
 
         context.globalCompositeOperation = 'xor';
-        context.font = '200px Montserrat Alternates';
+        context.textAlign = 'center';
+        context.font = timeFont;
         context.textBaseline = 'middle';
         drawTime(whiteInner, s.centrePoint);
 
@@ -63,30 +71,18 @@ module.exports = function(canvasID){
     var drawPlayers = function(players, player) {
         context.font = playerFont;
         context.textBaseline = 'alphabetic';
-        // draw all players
-        context.textAlign = 'center';
-        context.shadowBlur = 1;
+        // draw all players, except me
         var p, dark;
         for (var i = 0; i < players.length; i++) {
             p = players[i];
             if (p.id !== player.id) {
                 dark = (whiteInner === p.inner) ? true : false;
-                drawPlayer(p.pos.x, p.pos.y, p.name, dark, false);
+                drawPlayer(p.pos.x, p.pos.y, p.name, dark);
             }
         }
-
-        // draw me last
-        drawPlayer(player.x, player.y, player.name, true, true);
-        context.shadowBlur = 0;
     };
 
-    module.clearA = function() {
-        // resets canvas and clears
-        context.setTransform(1, 0, 0, 1, 0, 0);
-        context.clearRect(0, 0, canvas.width, canvas.height);
-    };
-
-    var clearB = function() {
+    var clear = function() {
         // clears around the player
         context.clearRect(view.left, view.top, window.innerWidth, window.innerHeight);
     };
@@ -129,11 +125,12 @@ module.exports = function(canvasID){
         context.fillText(s.getSecondsLeft(time), s.centrePoint, s.centrePoint);
     };
 
-    var len = 150;
+    var explosionWidth = 150;
     var drawExplosion = function() {
         var size = s.getExplosionRadius(time),
             outer = s.getOuterBoundaryRadius(time),
-            inRadius = Math.max(size - len, 0),
+            // size of inner and outer boundaries of the explosion
+            inRadius = Math.max(size - explosionWidth, 0),
             outRadius = Math.min(size, outer);
         if (inRadius <= outer) {
             var gradient = context.createRadialGradient(s.centrePoint, s.centrePoint, outRadius,
@@ -160,22 +157,37 @@ module.exports = function(canvasID){
 
     var rad = s.playerRadius + 1;
     var circlesPrerender = function() {
-        circlesCanvas.width = rad * 6 * ratio;
+        circlesCanvas.width = rad * 4 * ratio;
         circlesCanvas.height = rad * 2 * ratio;
 
         drawCircle(rad, rad, rad - 1, black);
         drawCircle(3*rad, rad, rad - 1, white);
-        drawCircle(5*rad, rad, rad - 1, blue);
     };
 
-    var drawPlayer = function(x, y, name, dark, you) {
-        var pos = you ? 4*rad : dark ? 0 : 2*rad;
+    var drawPlayer = function(x, y, name, dark) {
+        var pos;
+        if (dark) {
+            pos = 0;
+            context.fillStyle = black;
+        } else {
+            pos = 2*rad;
+            context.fillStyle = white;
+        }
+
         context.drawImage(circlesCanvas, pos, 0, rad*2, rad*2,
                           x - rad, y - rad, rad*2, rad*2);
 
-        context.fillStyle = you ? blue : dark ? black : white;
-        context.shadowColor = you ? 'transparent' : dark ? white : black;
         context.fillText(name, x, y - 32);
+    };
+
+    var myName = document.getElementById('myName');
+    var me = document.getElementById('me');
+    module.showMe = function(player) {
+        myName.innerHTML = player.name;
+        me.className = '';
+    };
+    module.hideMe = function() {
+        me.className = 'hidden';
     };
 
     module.resize = function(endFunction) {
@@ -184,22 +196,24 @@ module.exports = function(canvasID){
                      context.mozBackingStorePixelRatio ||
                       context.msBackingStorePixelRatio ||
                        context.oBackingStorePixelRatio ||
-                        context.backingStorePixelRatio || 1;
-        ratio = dpr/bsr;
-        width = window.innerWidth;
-        height = window.innerHeight;
+                        context.backingStorePixelRatio || 1,
+            w = window.innerWidth,
+            h = window.innerHeight;
 
-        canvas.width = width * ratio;
-        canvas.height = height * ratio;
-        canvas.style.width = width + 'px';
-        canvas.style.height = height + 'px';
+        // ratio is used for high dpi like retina screens
+        ratio = dpr/bsr;
+
+        canvas.width = w * ratio;
+        canvas.height = h * ratio;
+        canvas.style.width = w + 'px';
+        canvas.style.height = h + 'px';
 
         circlesPrerender();
 
-        view.centreX = width/2;
-        view.centreY = height/2;
+        view.centreX = w/2;
+        view.centreY = h/2;
 
-        endFunction.call();
+        endFunction();
     };
 
     module.swapColours = function() {
