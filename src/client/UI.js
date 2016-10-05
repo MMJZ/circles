@@ -43,8 +43,21 @@ module.exports = function(){
         });
     };
 
+    module.setup = function(action) {
+        hideStartScreen();
+        userControlEvents.bindActions(action);
+    };
+
+    module.reset = function(endMessage) {
+        showStartScreen();
+        userControlEvents.unbindActions();
+        if (endMessage != null) {
+            module.showStartMessage(endMessage);
+        }
+    };
+
     var serverUpdate;
-    module.userControlEvents = {
+    var userControlEvents = {
         bindActions: function(updateFunc) {
             serverUpdate = updateFunc;
             keyEvents.bindActions();
@@ -141,20 +154,7 @@ module.exports = function(){
         },
     };
 
-    module.setup = function(action) {
-        module.hideStartScreen();
-        module.userControlEvents.bindActions(action);
-    };
-
-    module.reset = function(endMessage) {
-        module.showStartScreen();
-        module.userControlEvents.unbindActions();
-        if (endMessage != null) {
-            module.showStartMessage(endMessage);
-        }
-    };
-
-    module.showStartScreen = function() {
+    var showStartScreen = function() {
         elements.startScreen.addEventListener('animationend', function() {
             elements.startScreen.className = '';
         }, false);
@@ -162,7 +162,7 @@ module.exports = function(){
         window.focus();
     };
 
-    module.hideStartScreen = function() {
+    var hideStartScreen = function() {
         elements.startScreen.addEventListener('animationend', function() {
             elements.startScreen.className = 'hidden';
         }, false);
