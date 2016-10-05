@@ -55,8 +55,6 @@ function doGameTick(){
     if(time === s.maxTime) endRound();
     var player;
 
-    // Movement
-
     for(var i = 0; i < users.length; i++){
         player = users[i];
         if(player.keys.left)  player.vel.x -= s.playerAcceleration;
@@ -72,8 +70,6 @@ function doGameTick(){
         player.pos.x += player.vel.x;
         player.pos.y += player.vel.y;
     }
-
-    // Collisions
     
     var outP = s.getOuterBoundaryRadius(time);
     var inP = s.getInnerBoundaryRadius(time);
@@ -88,38 +84,12 @@ function doGameTick(){
         if(cexp && !player.flown){
             if(Math.abs(Math.sqrt(dx2 + dy2) - exp) < 10){
                 player.flown = true;
-                
                 var x = player.pos.x - s.centrePoint, y = s.centrePoint - player.pos.y;
-                var angle = Math.atan(y/x);
+                var zlol = y/x, angle = Math.atan(zlol);
+                if(zlol < 0) angle += Math.PI;
                 if(y < 0) angle += Math.PI;
                 player.vel.x += pushFac * Math.cos(angle);
                 player.vel.y -= pushFac * Math.sin(angle);
-                
-                //var x = player.pos.x - s.centrePoint, y = player.pos.y - s.centrePoint;
-                //var angle;
-                /*
-                if(x >= s.centrePoint){
-                    if(y >= 0){
-                        angle = Math.atan(y/x);
-                        player.vel.x += pushFac * Math.cos(angle);
-                        player.vel.y += pushFac * Math.sin(angle);
-                    }else{
-                        angle = Math.atan(-y/x);
-                        player.vel.x += pushFac * Math.cos(angle);
-                        player.vel.y -= pushFac * Math.sin(angle);
-                    }
-                }else{
-                    if(y >= 0){
-                        angle = Math.atan(-y/x);
-                        player.vel.x -= pushFac * Math.cos(angle);
-                        player.vel.y += pushFac * Math.sin(angle);
-                    }else{
-                        angle = Math.atan(y/x);
-                        player.vel.x -= pushFac * Math.cos(angle);
-                        player.vel.y -= pushFac * Math.sin(angle);
-                    }
-                }
-                */
             }
         }
         if(player.inner){
@@ -254,8 +224,6 @@ io.on('connection', function(socket) {
         currentPlayer.keys = keys;
     });
 });
-
-// Circle Functions
 
 function getFreePosition(){
     var minx = s.getOuterBoundaryPosition(time);
