@@ -2,8 +2,8 @@ module.exports = function(){
     var module = {
         tickLength: 20, // framerate = 1000/20 = 50fps.
         playerRadius: 20,
-        playerMaxSpeed: 20,
-        playerAcceleration: 0.2,
+        playerMaxSpeed: 30,
+        playerAcceleration: 0.4,
         outerBoundarySize: 8000,
         gameLength: 1000 * 40,
         maxLag: 10000,

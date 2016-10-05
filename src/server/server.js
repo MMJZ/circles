@@ -55,8 +55,6 @@ function doGameTick(){
     if(time === s.maxTime) endRound();
     var player;
 
-    // Movement
-
     for(var i = 0; i < users.length; i++){
         player = users[i];
         if(player.keys.left)  player.vel.x -= s.playerAcceleration;
@@ -72,8 +70,6 @@ function doGameTick(){
         player.pos.x += player.vel.x;
         player.pos.y += player.vel.y;
     }
-
-    // Collisions
     
     var outP = s.getOuterBoundaryRadius(time);
     var inP = s.getInnerBoundaryRadius(time);
@@ -86,32 +82,14 @@ function doGameTick(){
         var dy = s.centrePoint - player.pos.y;
         var dx2 = sq(dx), dy2 = sq(dy);
         if(cexp && !player.flown){
-            if(Math.abs(dx2 + dy2 - sq(exp)) < 10){
-                //TODO
+            if(Math.abs(Math.sqrt(dx2 + dy2) - exp) < 10){
                 player.flown = true;
-                var x = player.pos.x, y = player.pos.y;
-                var angle;
-                if(x >= 0){
-                    if(y >= 0){
-                        angle = Math.atan(y/x);
-                        player.vel.x += pushFac * Math.cos(angle);
-                        player.vel.y += pushFac * Math.sin(angle);
-                    }else{
-                        angle = Math.atan(-y/x);
-                        player.vel.x += pushFac * Math.cos(angle);
-                        player.vel.y -= pushFac * Math.sin(angle);
-                    }
-                }else{
-                    if(y >= 0){
-                        angle = Math.atan(-y/x);
-                        player.vel.x -= pushFac * Math.cos(angle);
-                        player.vel.y += pushFac * Math.sin(angle);
-                    }else{
-                        angle = Math.atan(y/x);
-                        player.vel.x -= pushFac * Math.cos(angle);
-                        player.vel.y -= pushFac * Math.sin(angle);
-                    }
-                }
+                var x = player.pos.x - s.centrePoint, y = s.centrePoint - player.pos.y;
+                var zlol = y/x, angle = Math.atan(zlol);
+                if(zlol < 0) angle += Math.PI;
+                if(y < 0) angle += Math.PI;
+                player.vel.x += pushFac * Math.cos(angle);
+                player.vel.y -= pushFac * Math.sin(angle);
             }
         }
         if(player.inner){
@@ -140,7 +118,7 @@ function doGameTick(){
                     x: normalSpeed * normalX * 2 + tangentSpeed * tangentX * 2,
                     y: normalSpeed * normalY * 2 + tangentSpeed * tangentY * 2,
                 };
-            }else if(dx2 + dy2 < sq(s.centrePoint - inP + s.playerRadius)){
+            }else if(dx2 + dy2 < sq(inP + s.playerRadius)){
                 bashCircles(player, {pos:{x:s.centrePoint,y:s.centrePoint},vel:{x:0,y:0}});
             }
         }
@@ -247,8 +225,6 @@ io.on('connection', function(socket) {
     });
 });
 
-// Circle Functions
-
 function getFreePosition(){
     var minx = s.getOuterBoundaryPosition(time);
     var range = s.outerBoundarySize - 2 * minx;
@@ -272,9 +248,10 @@ function getFreePosition(){
 
 function isTouching(a, b){
     var r = s.playerRadius;
-    var ax1 = a.pos.x-r, bx1 = b.pos.x-r, ay1 = a.pos.y-r, by1 = b.pos.y-r;
-    var ax2 = a.pos.x+r, ay2 = b.pos.x+r, bx2 = a.pos.y+r, by2 = b.pos.y+r;
-    if(ax2 < bx1 || ay2 < by1 || bx2 < ax1 || by2 < ay1) return false;
+    if(a.pos.x + r < b.pos.x - r) return false;
+    if(a.pos.y + r < b.pos.y - r) return false;
+    if(a.pos.x - r > b.pos.x + r) return false;
+    if(a.pos.y - r > b.pos.y + r) return false;
     return sq(b.pos.x - a.pos.x) + sq(b.pos.y - a.pos.y) < sq(r + r);
 }
 

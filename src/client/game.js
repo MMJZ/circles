@@ -42,7 +42,8 @@ module.exports = function(){
     module.server = {
         connect: function() {
             try {
-                socket = io('http://circles-nerdycouple.rhcloud.com:8000', {
+                socket = io('http://127.0.0.1:3002', {
+                //socket = io('http://circles-nerdycouple.rhcloud.com:8000', {
                     reconnection: false,
                 });
                 UI.showStartMessage('connecting...');
@@ -60,8 +61,10 @@ module.exports = function(){
                     Draw.setTime(serverTime);
                     module.setViewAndPlayer();
                 });
-                socket.on('endRound', function(leaderboard) {
+                socket.on('leaderboard', function(leaderboard){
                     UI.updateLeaderboard(leaderboard);
+                });
+                socket.on('endRound', function(){
                     Draw.swapColours();
                 });
                 socket.on('kick', function(message){
